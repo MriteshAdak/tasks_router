@@ -1,0 +1,32 @@
+[build-system]
+requires = ["pdm-backend"]
+build-backend = "pdm.backend"
+
+[project]
+name = "tasks-router"
+dynamic = ["version"]
+description = "FastAPI application routing request to PostgreSQL DB"
+requires-python = ">=3.12"
+authors = [
+    { name = "Mritesh", email = "adak.mritesh@gmail.com" },
+]
+readme = "README.md"
+dependencies = [
+    "fastapi[standard]",
+    "SQLAlchemy",
+    "psycopg[binary]"
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest"
+]
+
+[project.scripts]
+start = "tasks_router.cli:main"
+
+[tool.setuptools.dynamic]
+version = {attr = "tasks_router.__version__"}
+
+[tool.setuptools.packages.find]
+include = ["tasks_router*"]
