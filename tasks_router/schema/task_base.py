@@ -9,3 +9,4 @@ class Task(BaseModel):
     title: str
     status: str = 'todo'
     due_date: datetime | None = Field(default=None, validation_alias=AliasChoices('dueDate', 'due_date'))
+    
