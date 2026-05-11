@@ -3,7 +3,7 @@ import uuid
 from sqlalchemy.orm import Mapped, mapped_column
 from sqlalchemy import UUID, String
 
-from .base_model import Base
+from tasks_router.database.initiate_db import Base
 
 class User(Base):
     __tablename__ = 'user'

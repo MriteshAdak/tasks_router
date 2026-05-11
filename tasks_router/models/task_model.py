@@ -3,7 +3,8 @@ from datetime import datetime
 
 from sqlalchemy.orm import Mapped, mapped_column
 from sqlalchemy import String, DateTime, UUID, ForeignKey
-from .base_model import Base
+
+from tasks_router.database.initiate_db import Base
 
 class Task(Base):
     __tablename__ = 'task'
