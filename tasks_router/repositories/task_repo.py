@@ -8,7 +8,6 @@ import uuid
 from sqlalchemy.orm import Session
 
 from tasks_router.models.task_model import Task as TaskModel
-# from tasks_router.schema.task_base import Task as TaskSchema
 
 class TaskRepository:
     """Repository class for managing Task entities in the database."""
