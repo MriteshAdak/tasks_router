@@ -4,7 +4,7 @@ from tasks_router.models.task_model import Task as TaskModel
 from tasks_router.schema.task_response import TaskResponse
 
 
-def convert_task_model_to_response(task: TaskModel) -> TaskResponse:
+def convert_task_model_to_response(task: TaskModel) -> TaskResponse: # handle bad inputs
     """Convert TaskModel instance to TaskResponse schema."""
 
     return TaskResponse(
