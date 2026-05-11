@@ -18,7 +18,8 @@ class UserRepository:
     # ------------------------------ CRUD operations ------------------------------
 
     # ------------------------------ Read operations ------------------------------
-
+    
+    # Will not be used in the current implementation, but added for completeness and future use.
     def get_all(self) -> list[UserModel]:
         """Retrieve all users."""
         
