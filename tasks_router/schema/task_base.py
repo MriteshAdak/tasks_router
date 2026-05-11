@@ -6,7 +6,6 @@ from pydantic import BaseModel, Field, AliasChoices, ConfigDict
 from datetime import datetime
 
 class Task(BaseModel):
-    id: str
     user_id: str = Field(validation_alias=AliasChoices('userId', 'user_id'))
     title: str
     status: str = 'todo'
