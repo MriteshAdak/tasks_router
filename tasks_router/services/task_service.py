@@ -35,13 +35,13 @@ class TaskServices:
         created_task: TaskModel = self.repository.create(new_task)
         return convert_task_model_to_response(created_task)
     
-    def update(self, task: TaskUpdate) -> TaskResponse:
+    def update(self, task_id: uuid.UUID, task: TaskUpdate) -> TaskResponse:
         """Service for updating an existing task in the database."""
 
-        existing_task: TaskModel | None = self.repository.get_by_id(task.id)
+        existing_task: TaskModel | None = self.repository.get_by_id(task_id)
 
         if not existing_task:
-            raise ValueError(f"Task with ID {task.id} not found.")
+            raise ValueError(f"Task with ID {task_id} not found.")
 
         existing_task.title = task.title
         existing_task.status = task.status
@@ -50,11 +50,11 @@ class TaskServices:
         return convert_task_model_to_response(self.repository.update(existing_task))
         
     
-    def delete(self, task: TaskUpdate):
+    def delete(self, task_id: uuid.UUID):
         """Service for deleting a task from the database."""
 
-        existing_task: TaskModel | None = self.repository.get_by_id(task.id)
+        existing_task: TaskModel | None = self.repository.get_by_id(task_id)
 
         if not existing_task:
-            raise ValueError(f"Task with ID {task.id} not found.")
+            raise ValueError(f"Task with ID {task_id} not found.")
         self.repository.delete(existing_task)
