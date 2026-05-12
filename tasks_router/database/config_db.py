@@ -16,4 +16,4 @@ class Settings(BaseSettings):
     def get_db_url(self) -> str:
         return f"postgresql://{self.username}:{self.password}@{self.host}:{self.port}/{self.database}"
     
-settings = Settings()
+settings: Settings = Settings()
