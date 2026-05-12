@@ -1,4 +1,4 @@
-from .config_db import Settings
+from .config_db import settings
 from sqlalchemy import create_engine, Engine
 from sqlalchemy.orm import Session, sessionmaker, DeclarativeBase
 from typing import Generator
@@ -10,7 +10,7 @@ class Base(DeclarativeBase):
 
 class Database:
 
-    def __init__(self, settings: Settings):
+    def __init__(self):
         self.db_url = settings.get_db_url()
         self._engine: Engine | None = None
         self._session_factory: sessionmaker[Session] | None = None
