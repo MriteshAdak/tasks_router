@@ -18,7 +18,7 @@ class Database:
     def get_engine(self) -> Engine:
         """Returns a cached Engine instance. Creates one if it doesn't exist."""
 
-        if self._engine is None:
+        if self._engine is None: # Move all these configuration params to a config file.
             self._engine = create_engine(
                 self.db_url,
                 echo=True,           
@@ -39,17 +39,11 @@ class Database:
             )
         return self._session_factory
 
-    def create_tables(self) -> None:
-        """Creates all tables defined on Base."""
-
-        Base.metadata.create_all(bind=self.get_engine())
-
     def get_db(self) -> Generator[Session, None, None]:
         """
-        Generates a new database session for each request. Commits the transaction if successful, rolls back if an exception occurs, and ensures the session is closed after use.
+        Generates a new database session for each request. The session is closed after use.
         """
-        session_factory: sessionmaker[Session] = self.get_session_factory()
-        db: Session = session_factory()
+        db: Session = self.get_session_factory()()
         try:
             yield db
         finally:
