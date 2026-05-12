@@ -16,7 +16,7 @@ class TaskServices:
         
         self.repository = repository
 
-    def get_all(self, user_id: str) -> list[TaskResponse]:
+    def get_all(self, user_id: uuid.UUID) -> list[TaskResponse]:
         """Service for retrieving all tasks for a given user ID."""
 
         queried_tasks: list[TaskModel] =  self.repository.get_all(user_id)
