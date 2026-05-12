@@ -1,4 +1,4 @@
-from .config_db import settings
+from .config_db import Settings
 from sqlalchemy import create_engine, Engine
 from sqlalchemy.orm import Session, sessionmaker, DeclarativeBase
 from typing import Generator
@@ -10,13 +10,14 @@ class Base(DeclarativeBase):
 
 class Database:
 
-    def __init__(self):
+    def __init__(self, settings: Settings) -> None:
         self.db_url = settings.get_db_url()
         self._engine: Engine | None = None
         self._session_factory: sessionmaker[Session] | None = None
 
     def get_engine(self) -> Engine:
         """Returns a cached Engine instance. Creates one if it doesn't exist."""
+
         if self._engine is None:
             self._engine = create_engine(
                 self.db_url,
@@ -29,6 +30,7 @@ class Database:
 
     def get_session_factory(self) -> sessionmaker[Session]:
         """Returns a cached sessionmaker bound to the engine."""
+        
         if self._session_factory is None:
             self._session_factory = sessionmaker(
                 self.get_engine(),
@@ -39,6 +41,7 @@ class Database:
 
     def create_tables(self) -> None:
         """Creates all tables defined on Base."""
+
         Base.metadata.create_all(bind=self.get_engine())
 
     def get_db(self) -> Generator[Session, None, None]:
@@ -49,9 +52,5 @@ class Database:
         db: Session = session_factory()
         try:
             yield db
-            db.commit()
-        except Exception:
-            db.rollback()
-            raise
         finally:
             db.close()
