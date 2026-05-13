@@ -1,3 +1,7 @@
+"""
+TaskModel for SQLAlchemy ORM, representing the 'task' table in the database.
+"""
+
 import uuid
 from datetime import datetime
 

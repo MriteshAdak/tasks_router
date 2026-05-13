@@ -1,3 +1,7 @@
+"""
+UserModel for SQLAlchemy ORM, representing the 'user' table in the database.
+"""
+
 import uuid
 
 from sqlalchemy.orm import Mapped, mapped_column
