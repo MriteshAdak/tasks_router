@@ -26,6 +26,7 @@ class Database:
     def get_engine(self) -> Engine:
         """Returns a cached Engine instance. Creates one if it doesn't exist."""
 
+        # TODO: Implement exception handling and logging for database connection issues. Consider retry logic for transient errors.
         if self._engine is None: # Move all these configuration params to a config file.
             self._engine = create_engine(
                 self.db_url,
@@ -37,6 +38,7 @@ class Database:
             )
         return self._engine
 
+    # TODO: Implement exception handling and logging for session creation issues.
     def get_session_factory(self) -> sessionmaker[Session]:
         """Returns a cached sessionmaker bound to the engine."""
         
@@ -48,10 +50,10 @@ class Database:
             )
         return self._session_factory
 
-    # Todo: decide if commit and rollback should be handled here or in the service layer.
+    # TODO: decide if commit and rollback should be handled here or in the service layer.
     def get_db(self) -> Generator[Session, None, None]: 
         """Generates a new database session for each request. The session is closed after use."""
-        
+
         db: Session = self.get_session_factory()()
         try:
             yield db
