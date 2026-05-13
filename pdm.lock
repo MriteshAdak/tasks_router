@@ -5,7 +5,7 @@
 groups = ["default"]
 strategy = ["inherit_metadata"]
 lock_version = "4.5.0"
-content_hash = "sha256:8f0f214d8e6d89e30501a0a99a8d27c5093839e3a94a5a033bfd9969e7ba849b"
+content_hash = "sha256:b88a5ec87ccdbb9d7268061acc2a474db6b5af03e3a20d3cef8df0bcc5693b1d"
 
 [[metadata.targets]]
 requires_python = ">=3.12"
@@ -508,6 +508,20 @@ dependencies = [
 files = [
     {file = "mako-1.3.12-py3-none-any.whl", hash = "sha256:8f61569480282dbf557145ce441e4ba888be453c30989f879f0d652e39f53ea9"},
     {file = "mako-1.3.12.tar.gz", hash = "sha256:9f778e93289bd410bb35daadeb4fc66d95a746f0b75777b942088b7fd7af550a"},
+]
+
+[[package]]
+name = "mangum"
+version = "0.21.0"
+requires_python = ">=3.9"
+summary = "AWS Lambda support for ASGI applications"
+groups = ["default"]
+dependencies = [
+    "typing-extensions",
+]
+files = [
+    {file = "mangum-0.21.0-py3-none-any.whl", hash = "sha256:309e48f5c629542516c5106ecf079f4ec08809ed50df882238d98fe1392820c7"},
+    {file = "mangum-0.21.0.tar.gz", hash = "sha256:e31ed72d67f9958fa4379f65df77729906dec6dfa00afa6ed4e06c77833000de"},
 ]
 
 [[package]]

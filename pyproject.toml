@@ -17,7 +17,8 @@ dependencies = [
     "alembic>=1.18.4",
     "python-dotenv>=1.2.2",
     "boto3>=1.43.6",
-    "psycopg2-binary>=2.9.12"
+    "psycopg2-binary>=2.9.12",
+    "mangum>=0.21.0"
 ]
 license = {text = "MIT"}
 
