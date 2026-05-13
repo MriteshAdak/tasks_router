@@ -1,8 +1,13 @@
-from .config_db import Settings
-from sqlalchemy import create_engine, Engine
-from sqlalchemy.orm import Session, sessionmaker, DeclarativeBase
+"""
+This module defines the Database class, which manages the SQLAlchemy engine and session factory for the application. It provides methods to create and cache the engine and session factory, as well as a generator function to yield database sessions for use in request handling.
+"""
+
 from typing import Generator
 
+from sqlalchemy import create_engine, Engine
+from sqlalchemy.orm import Session, sessionmaker, DeclarativeBase
+
+from .config_db import Settings
 
 class Base(DeclarativeBase):
     pass
@@ -11,6 +16,8 @@ class Base(DeclarativeBase):
 class Database:
 
     def __init__(self, settings: Settings) -> None:
+        """Initializes the Database instance with the provided settings."""
+
         self.db_url = settings.get_db_url()
         self.conn_args = settings.get_conn_args()
         self._engine: Engine | None = None
@@ -43,9 +50,8 @@ class Database:
 
     # Todo: decide if commit and rollback should be handled here or in the service layer.
     def get_db(self) -> Generator[Session, None, None]: 
-        """
-        Generates a new database session for each request. The session is closed after use.
-        """
+        """Generates a new database session for each request. The session is closed after use."""
+        
         db: Session = self.get_session_factory()()
         try:
             yield db
