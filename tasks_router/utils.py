@@ -8,13 +8,7 @@ from tasks_router.schema.user_schema import User as UserDTO
 def convert_task_model_to_response(task: TaskModel) -> TaskResponse: # handle bad inputs
     """Convert TaskModel instance to TaskResponse schema."""
 
-    return TaskResponse(
-        id=task.id,
-        user_id=task.user_id,
-        title=task.title,
-        status=task.status,
-        due_date=task.due_date
-    )
+    return TaskResponse.model_validate(task)
 
 
 def convert_task_models_to_responses(tasks: list[TaskModel]) -> list[TaskResponse]:
@@ -26,7 +20,4 @@ def convert_task_models_to_responses(tasks: list[TaskModel]) -> list[TaskRespons
 def convert_user_model_to_user_dto_schema(user: UserModel) -> UserDTO:
     """Convert UserModel instance to UserDTO schema."""
 
-    return UserDTO(
-        username=user.username,
-        display_name=user.display_name
-    )
+    return UserDTO.model_validate(user)
