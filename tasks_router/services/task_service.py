@@ -26,7 +26,7 @@ class TaskServices:
         """Service for creating a new task in the database."""
         
         new_task = TaskModel(
-            id=str(uuid.uuid4()),
+            id=uuid.uuid4(),
             user_id=task.user_id,
             title=task.title,
             status=task.status,
