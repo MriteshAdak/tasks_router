@@ -5,7 +5,7 @@ from tasks_router.schema.task_schema import TaskResponse
 from tasks_router.models.user_model import User as UserModel
 from tasks_router.schema.user_schema import User as UserDTO
 
-def convert_task_model_to_response(task: TaskModel) -> TaskResponse: # handle bad inputs
+def convert_task_model_to_response(task: TaskModel) -> TaskResponse:
     """Convert TaskModel instance to TaskResponse schema."""
 
     return TaskResponse.model_validate(task)
