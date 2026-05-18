@@ -34,6 +34,13 @@ class DatabaseOperationException(Exception):
         self.message = message
         super().__init__(self.message)
 
+class ServiceException(Exception):
+    """Exception raised for general service errors."""
+
+    def __init__(self, message: str) -> None:
+        self.message = message
+        super().__init__(self.message)
+
 class UserConflictException(Exception):
     """Exception raised when there is a conflict with an existing user."""
 
