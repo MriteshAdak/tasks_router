@@ -23,7 +23,7 @@ class TaskRepository:
 
     # ------------------------------ Read operations ------------------------------
 
-    def get_all(self, user_id: uuid.UUID) -> list[TaskModel] | None:
+    def get_all(self, user_id: uuid.UUID) -> list[TaskModel]:
         """Retrieve all tasks for a given user ID."""
         
         try:
@@ -31,7 +31,7 @@ class TaskRepository:
         except Exception as e:
             raise SQLAlchemyError(f"Error retrieving tasks for user ID {user_id}: {str(e)}") from e
     
-    def get_by_id(self, task_id: uuid.UUID) -> TaskModel | None:
+    def get_by_id(self, task_id: uuid.UUID) -> TaskModel:
         """Retrieve a task by its ID."""
         
         try:
