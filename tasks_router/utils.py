@@ -22,11 +22,12 @@ def convert_user_model_to_user_schema_dto(user: UserModel) -> UserDTO:
 
     return UserDTO.model_validate(user)
 
+# TODO: review
 def convert_task_schema_dto_to_task_model(task: TaskCreate) -> TaskModel:
     """Convert TaskCreate schema to TaskModel instance."""
 
     return TaskModel(
-        user_id=task.user_id,
+        # user_id=task.user_id,
         title=task.title,
         status=task.status,
         due_date=task.due_date if task.due_date else None
