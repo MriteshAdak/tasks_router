@@ -7,7 +7,7 @@ from datetime import UTC, datetime
 
 from sqlalchemy.orm import Mapped, mapped_column
 from sqlalchemy import String, DateTime, UUID, ForeignKey
-from sqlalchemy.sql import func
+# from sqlalchemy.sql import func
 
 from tasks_router.database.initiate_db import Base
 from tasks_router.enums.task_statuses import TaskStatus
