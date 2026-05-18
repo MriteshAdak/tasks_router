@@ -27,7 +27,7 @@ class ValidationException(Exception):
         self.message = message
         super().__init__(self.message)
 
-class DatabaseException(Exception):
+class DatabaseOperationException(Exception):
     """Exception raised for database errors."""
 
     def __init__(self, message: str) -> None:
