@@ -15,9 +15,9 @@ class TaskNotFoundException(Exception):
 class UserNotFoundException(Exception):
     """Exception raised when a user is not found."""
 
-    def __init__(self, user_id: uuid.UUID) -> None:
-        self.user_id = user_id
-        self.message = f"User with ID {user_id} not found."
+    def __init__(self, username: str) -> None:
+        self.username = username
+        self.message = f"User with username {username} not found."
         super().__init__(self.message)
 
 class ValidationException(Exception):
