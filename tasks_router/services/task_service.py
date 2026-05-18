@@ -8,7 +8,7 @@ import uuid
 from tasks_router.models.task_model import Task as TaskModel
 from tasks_router.schema.task_schema import TaskCreate, TaskUpdate, TaskResponse
 from tasks_router.repositories.task_repo import TaskRepository
-from tasks_router.utils import convert_task_model_to_response, convert_task_models_to_responses
+from tasks_router.utils import convert_task_model_to_response_dto, convert_task_models_to_responses_dto
 
 class TaskServices:
     def __init__(self, repository: TaskRepository) -> None:
@@ -20,7 +20,7 @@ class TaskServices:
         """Service for retrieving all tasks for a given user ID."""
 
         queried_tasks: list[TaskModel] =  self.repository.get_all(user_id)
-        return convert_task_models_to_responses(queried_tasks)
+        return convert_task_models_to_responses_dto(queried_tasks)
     
     def create(self, task: TaskCreate) -> TaskResponse:
         """Service for creating a new task in the database."""
@@ -33,7 +33,7 @@ class TaskServices:
             due_date=task.due_date if task.due_date else None
         )
         created_task: TaskModel = self.repository.create(new_task)
-        return convert_task_model_to_response(created_task)
+        return convert_task_model_to_response_dto(created_task)
     
     def update(self, task_id: uuid.UUID, task: TaskUpdate) -> TaskResponse:
         """Service for updating an existing task in the database."""
@@ -47,7 +47,7 @@ class TaskServices:
         existing_task.status = task.status
         existing_task.due_date = task.due_date if task.due_date else None
         
-        return convert_task_model_to_response(self.repository.update(existing_task))
+        return convert_task_model_to_response_dto(self.repository.update(existing_task))
         
     
     def delete(self, task_id: uuid.UUID):
