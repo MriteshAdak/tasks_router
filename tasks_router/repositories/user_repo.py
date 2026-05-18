@@ -6,6 +6,7 @@ This module defines the UserRepository class, which provides methods for perform
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import SQLAlchemyError
 
+from tasks_router.exceptions.custom_exceptions import UserNotFoundException
 from tasks_router.models.user_model import User as UserModel
 
 class UserRepository:
@@ -33,7 +34,10 @@ class UserRepository:
         """Retrieve a user by their username."""
         
         try:
-            return self.db_session.query(UserModel).filter(UserModel.username == username).first()
+            user: UserModel | None = self.db_session.query(UserModel).filter(UserModel.username == username).first()
+            if not user:
+                raise UserNotFoundException(username)
+            return user
         except Exception as e:
             raise SQLAlchemyError(f"Error occurred while fetching user with username: {username}: {str(e)}") from e
 
