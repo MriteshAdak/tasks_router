@@ -38,6 +38,8 @@ class UserRepository:
             if not user:
                 raise UserNotFoundException(username)
             return user
+        except UserNotFoundException:
+            raise
         except Exception as e:
             raise SQLAlchemyError(f"Error occurred while fetching user with username: {username}: {str(e)}") from e
 
