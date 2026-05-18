@@ -5,8 +5,6 @@ This module defines the TaskServices class, which interacts with the TaskReposit
 
 import uuid
 
-from sqlalchemy.exc import SQLAlchemyError
-
 from tasks_router.models.task_model import Task as TaskModel
 from tasks_router.schema.task_schema import TaskCreate, TaskUpdate, TaskResponse
 from tasks_router.repositories.task_repo import TaskRepository
