@@ -4,17 +4,12 @@ TaskModel for SQLAlchemy ORM, representing the 'task' table in the database.
 
 import uuid
 from datetime import UTC, datetime
-from enum import StrEnum
 
 from sqlalchemy.orm import Mapped, mapped_column
 from sqlalchemy import String, DateTime, UUID, ForeignKey
 
 from tasks_router.database.initiate_db import Base
-
-class TaskStatus(StrEnum):
-    TODO = "todo"
-    IN_PROGRESS = "in_progress"
-    DONE = "done"
+from tasks_router.enums.task_statuses import TaskStatus
 
 class Task(Base):
     __tablename__ = 'task'
