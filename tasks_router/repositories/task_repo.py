@@ -6,8 +6,10 @@ This module defines the TaskRepository class, which provides methods for perform
 import uuid
 
 from sqlalchemy.orm import Session
+from sqlalchemy.exc import SQLAlchemyError
 
 from tasks_router.models.task_model import Task as TaskModel
+from tasks_router.exceptions.custom_exceptions import TaskNotFoundException
 
 class TaskRepository:
     """Repository class for managing Task entities in the database."""
@@ -21,21 +23,24 @@ class TaskRepository:
 
     # ------------------------------ Read operations ------------------------------
 
-    def get_all(self, user_id: uuid.UUID) -> list[TaskModel]:
+    def get_all(self, user_id: uuid.UUID) -> list[TaskModel] | None:
         """Retrieve all tasks for a given user ID."""
         
         try:
             return self.db_session.query(TaskModel).filter(TaskModel.user_id == user_id).all()
-        except Exception:
-            raise LookupError(f"Error occurred while fetching tasks for user ID: {user_id}")
+        except Exception as e:
+            raise SQLAlchemyError(f"Error retrieving tasks for user ID {user_id}: {str(e)}") from e
     
     def get_by_id(self, task_id: uuid.UUID) -> TaskModel | None:
         """Retrieve a task by its ID."""
         
         try:
-            return self.db_session.query(TaskModel).filter(TaskModel.id == task_id).first()
-        except Exception:
-            raise LookupError(f"Error occurred while fetching task with ID: {task_id}")
+            task: TaskModel | None = self.db_session.query(TaskModel).filter(TaskModel.id == task_id).first()
+            if not task:
+                raise TaskNotFoundException(task_id)
+            return task
+        except Exception as e:
+            raise SQLAlchemyError(f"Error retrieving task with ID {task_id}: {str(e)}") from e
 
     # ------------------------------ Write operations ------------------------------
     
@@ -47,28 +52,28 @@ class TaskRepository:
             self.db_session.commit()
             self.db_session.refresh(task)
             return task
-        except Exception:
+        except Exception as e:
             self.db_session.rollback()
-            raise RuntimeError("Error occurred while creating a new task.")
-    
+            raise SQLAlchemyError(f"Error creating task: {str(e)}") from e
+        
     def update(self, task: TaskModel) -> TaskModel:
         """Update an existing task in the database."""
         
         try:
-            merged_task = self.db_session.merge(task) # Add logger here
+            merged_task = self.db_session.merge(task)
             self.db_session.commit()
             self.db_session.refresh(merged_task)
             return merged_task
-        except Exception:
+        except Exception as e:
             self.db_session.rollback()
-            raise RuntimeError("Error occurred while updating the task.")
+            raise SQLAlchemyError(f"Error updating task with ID {task.id}: {str(e)}") from e
 
-    def delete(self, task: TaskModel):
+    def delete(self, task: TaskModel) -> None:
         """Delete a task from the database."""
 
         try:
             self.db_session.delete(task)
             self.db_session.commit()
-        except Exception:
+        except Exception as e:
             self.db_session.rollback()
-            raise RuntimeError("Error occurred while deleting the task.")
+            raise SQLAlchemyError(f"Error deleting task with ID {task.id}: {str(e)}") from e
