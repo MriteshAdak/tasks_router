@@ -4,6 +4,7 @@ This module defines the UserRepository class, which provides methods for perform
 """
 
 from sqlalchemy.orm import Session
+from sqlalchemy.exc import SQLAlchemyError
 
 from tasks_router.models.user_model import User as UserModel
 
@@ -25,16 +26,16 @@ class UserRepository:
         
         try:
             return self.db_session.query(UserModel).all()
-        except Exception:
-            raise LookupError(f"Error occurred while fetching users.")
-    
+        except Exception as e:
+            raise SQLAlchemyError(f"Error occurred while fetching users: {str(e)}") from e
+
     def get_by_id(self, username: str) -> UserModel | None:
         """Retrieve a user by their username."""
         
         try:
             return self.db_session.query(UserModel).filter(UserModel.username == username).first()
-        except Exception:
-            raise LookupError(f"Error occurred while fetching user with username: {username}")
+        except Exception as e:
+            raise SQLAlchemyError(f"Error occurred while fetching user with username: {username}: {str(e)}") from e
 
     # ------------------------------ Write operations ------------------------------
     
@@ -46,10 +47,9 @@ class UserRepository:
             self.db_session.commit()
             self.db_session.refresh(user)
             return user
-        except Exception:
+        except Exception as e:
             self.db_session.rollback()
-            raise RuntimeError("Error occurred while creating a new user.")
-    
+            raise SQLAlchemyError(f"Error occurred while creating a new user: {str(e)}") from e
 
     # Will not be used in the current implementation, but added for completeness and future use.
     def update(self, user: UserModel) -> UserModel:
@@ -60,9 +60,9 @@ class UserRepository:
             self.db_session.commit()
             self.db_session.refresh(merged_user)
             return merged_user
-        except Exception:
+        except Exception as e:
             self.db_session.rollback()
-            raise RuntimeError("Error occurred while updating the user.")
+            raise SQLAlchemyError(f"Error occurred while updating the user: {str(e)}") from e
 
 
     # Will not be used in the current implementation, but added for completeness and future use.
@@ -72,6 +72,6 @@ class UserRepository:
         try:
             self.db_session.delete(user)
             self.db_session.commit()
-        except Exception:
+        except Exception as e:
             self.db_session.rollback()
-            raise RuntimeError("Error occurred while deleting the user.")
+            raise SQLAlchemyError(f"Error occurred while deleting the user: {str(e)}") from e
