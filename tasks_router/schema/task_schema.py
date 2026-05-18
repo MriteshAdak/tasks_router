@@ -12,13 +12,26 @@ from tasks_router.enums.task_statuses import TaskStatus
 class TaskCreate(BaseModel):
     title: str
     status: TaskStatus = TaskStatus.TODO
-    due_date: datetime | None = Field(default=None, validation_alias=AliasChoices('dueDate', 'due_date'))
+    due_date: datetime | None = Field(
+        default=None,
+        validation_alias=AliasChoices(
+            'dueDate',
+            'due_date'
+        )
+    )
     model_config = ConfigDict(from_attributes=True)
 
 class TaskUpdate(BaseModel):
     title: str | None = None
     status: TaskStatus | None = None
-    due_date: datetime | None = None
+    due_date: datetime | None = Field(
+        default=None,
+        validation_alias=AliasChoices(
+            'dueDate',
+            'due_date'
+        )
+    )
+    model_config = ConfigDict(from_attributes=True)
 
 class TaskResponse(BaseModel):
     id: uuid.UUID
