@@ -20,7 +20,7 @@ class Task(Base):
     __tablename__ = 'task'
     
     id: Mapped[uuid.UUID] = mapped_column(UUID, default=uuid.uuid4, primary_key=True)
-    user_id: Mapped[uuid.UUID] = mapped_column(UUID, ForeignKey('user.id'), index=True, nullable=False)
+    user_id: Mapped[uuid.UUID] = mapped_column(UUID, ForeignKey('user.id', ondelete='CASCADE'), index=True, nullable=False)
     title: Mapped[str] = mapped_column(String, nullable=False)
     status: Mapped[TaskStatus] = mapped_column(String, default=TaskStatus.TODO, nullable=False)
     due_date: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
