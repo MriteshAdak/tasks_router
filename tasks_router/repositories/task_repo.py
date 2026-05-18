@@ -6,10 +6,9 @@ This module defines the TaskRepository class, which provides methods for perform
 import uuid
 
 from sqlalchemy.orm import Session
-from sqlalchemy.exc import SQLAlchemyError
 
 from tasks_router.models.task_model import Task as TaskModel
-from tasks_router.exceptions.custom_exceptions import TaskNotFoundException
+from tasks_router.exceptions.custom_exceptions import TaskNotFoundException, DatabaseOperationException
 
 class TaskRepository:
     """Repository class for managing Task entities in the database."""
@@ -29,7 +28,7 @@ class TaskRepository:
         try:
             return self.db_session.query(TaskModel).filter(TaskModel.user_id == user_id).all()
         except Exception as e:
-            raise SQLAlchemyError(f"Error retrieving tasks for user ID {user_id}: {str(e)}") from e
+            raise DatabaseOperationException(f"Error retrieving tasks for user ID {user_id}: {str(e)}") from e
     
     def get_by_id(self, task_id: uuid.UUID) -> TaskModel:
         """Retrieve a task by its ID."""
@@ -39,8 +38,10 @@ class TaskRepository:
             if not task:
                 raise TaskNotFoundException(task_id)
             return task
+        except TaskNotFoundException:
+            raise
         except Exception as e:
-            raise SQLAlchemyError(f"Error retrieving task with ID {task_id}: {str(e)}") from e
+            raise DatabaseOperationException(f"Error retrieving task with ID {task_id}: {str(e)}") from e
 
     # ------------------------------ Write operations ------------------------------
     
@@ -54,8 +55,8 @@ class TaskRepository:
             return task
         except Exception as e:
             self.db_session.rollback()
-            raise SQLAlchemyError(f"Error creating task: {str(e)}") from e
-        
+            raise DatabaseOperationException(f"Error creating task: {str(e)}") from e
+
     def update(self, task: TaskModel) -> TaskModel:
         """Update an existing task in the database."""
         
@@ -66,7 +67,7 @@ class TaskRepository:
             return merged_task
         except Exception as e:
             self.db_session.rollback()
-            raise SQLAlchemyError(f"Error updating task with ID {task.id}: {str(e)}") from e
+            raise DatabaseOperationException(f"Error updating task with ID {task.id}: {str(e)}") from e
 
     def delete(self, task: TaskModel) -> None:
         """Delete a task from the database."""
@@ -76,4 +77,4 @@ class TaskRepository:
             self.db_session.commit()
         except Exception as e:
             self.db_session.rollback()
-            raise SQLAlchemyError(f"Error deleting task with ID {task.id}: {str(e)}") from e
+            raise DatabaseOperationException(f"Error deleting task with ID {task.id}: {str(e)}") from e
