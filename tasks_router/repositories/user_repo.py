@@ -29,7 +29,7 @@ class UserRepository:
         except Exception as e:
             raise DatabaseOperationException(f"Error occurred while fetching users: {str(e)}") from e
 
-    def get_by_id(self, username: str) -> UserModel | None:
+    def get_by_id(self, username: str) -> UserModel:
         """Retrieve a user by their username."""
         
         try:
