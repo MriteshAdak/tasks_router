@@ -7,9 +7,9 @@ from pydantic import BaseModel, Field, AliasChoices, ConfigDict
 class User(BaseModel):
     username: str = Field(
         validation_alias=AliasChoices(
-            'id',
-            'userId',
             'username',
+            'userId',
+            'id',
             'userName',
             'user_id',
             'user_name'
@@ -18,9 +18,9 @@ class User(BaseModel):
     
     display_name: str = Field(
         validation_alias=AliasChoices(
-            'name',
+            'display_name',
             'displayName',
-            'display_name'
+            'name'
         )
     )
     
