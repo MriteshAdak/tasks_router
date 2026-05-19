@@ -6,7 +6,7 @@ import uuid
 from datetime import UTC, datetime
 
 from sqlalchemy.orm import Mapped, mapped_column
-from sqlalchemy import String, DateTime, UUID, ForeignKey, Enum
+from sqlalchemy import String, DateTime, UUID, ForeignKey, Enum, func
 # from sqlalchemy.sql import func
 
 from tasks_router.database.initiate_db import Base
@@ -47,14 +47,14 @@ class Task(Base):
     # For auditing purposes only, not exposed in API responses
 
     created_at: Mapped[datetime] = mapped_column(
-        DateTime,
-        default=datetime.now(UTC),
+        DateTime(timezone=True),
+        default=func.database.now(UTC),
         nullable=False
     )
 
     updated_at: Mapped[datetime] = mapped_column(
-        DateTime,
-        default=datetime.now(UTC),
-        onupdate=datetime.now(UTC),
+        DateTime(timezone=True),
+        default=func.database.now(UTC),
+        onupdate=func.database.now(UTC),
         nullable=False
     )
