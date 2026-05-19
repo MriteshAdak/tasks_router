@@ -23,6 +23,8 @@ class UserService:
             return convert_user_model_to_user_schema_dto(user)
         except UserNotFoundException:
             raise
+        except DatabaseOperationException:
+            raise
         except Exception as e:
             raise ServiceException(f"Error retrieving user with username {username}: {str(e)}") from e
 
