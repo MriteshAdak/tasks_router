@@ -15,6 +15,7 @@ class User(Base):
     
     id: Mapped[uuid.UUID] = mapped_column(
         UUID,
+        default=uuid.uuid4,
         primary_key=True
     )
     
