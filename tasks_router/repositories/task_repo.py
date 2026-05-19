@@ -30,11 +30,11 @@ class TaskRepository:
         except Exception as e:
             raise DatabaseOperationException(f"Error retrieving tasks for user ID {user_id}: {str(e)}") from e
     
-    def get_by_id(self, task_id: uuid.UUID) -> TaskModel:
+    def get_by_id(self, task_id: uuid.UUID, user_id: uuid.UUID) -> TaskModel:
         """Retrieve a task by its ID."""
         
         try:
-            task: TaskModel | None = self.db_session.query(TaskModel).filter(TaskModel.id == task_id).first()
+            task: TaskModel | None = self.db_session.query(TaskModel).filter(TaskModel.id == task_id, TaskModel.user_id == user_id).first()
             if not task:
                 raise TaskNotFoundException(task_id)
             return task
