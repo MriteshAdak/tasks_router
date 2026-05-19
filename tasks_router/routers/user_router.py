@@ -3,18 +3,14 @@ User management API endpoints for retrieving and creating users.
 """
 
 from fastapi import APIRouter, Depends, status, HTTPException
-# from sqlalchemy.orm import Session
 
+from tasks_router.exceptions.custom_exceptions import UserNotFoundException, DatabaseOperationException, ServiceException
 from tasks_router.services.user_service import UserService
-# from tasks_router.repositories.user_repo import UserRepository
 from tasks_router.schema.user_schema import User
-# from tasks_router.database.initiate_db import Database
-# from tasks_router.database.config_db import settings
 from tasks_router.dependencies import get_user_services
 
 router: APIRouter = APIRouter(prefix="/users", tags=["Users"])
 
-# _db = Database(settings)
 
 @router.get(
         "/{username}",
@@ -25,11 +21,18 @@ def get_user(
     user_services: UserService = Depends(get_user_services)
     ) -> User:
     """Endpoint to retrieve a user by username."""
-    
-    user: User | None = user_services.get_user(username)
-    if not user:
+
+    try:
+        user: User = user_services.get_user(username)
+        return user
+    except UserNotFoundException:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
-    return user
+    except DatabaseOperationException as e:
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
+    except ServiceException as e:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
+    except Exception as e:
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="An unexpected error occurred while retrieving the user") from e
 
 @router.post(
         "/",
@@ -42,4 +45,11 @@ def create_user(
     ) -> User:
     """Endpoint to create a new user."""
 
-    return user_services.create(user)
+    try:
+        return user_services.create(user)
+    except DatabaseOperationException as e:
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
+    except ServiceException as e:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
+    except Exception as e:
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="An unexpected error occurred while creating the user") from e
