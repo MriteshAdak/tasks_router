@@ -39,3 +39,4 @@ class TaskResponse(BaseModel):
     status: TaskStatus
     due_date: datetime | None
     # add audit fields if and when needed
+    model_config = ConfigDict(from_attributes=True)
