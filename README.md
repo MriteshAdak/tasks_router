@@ -81,3 +81,9 @@ This project includes `mangum`, which is used to run FastAPI on AWS Lambda behin
 5. Connect API Gateway (HTTP API or REST API) to the Lambda function.
 
 After deployment, use the API Gateway URL to access the same endpoints (`/`, `/health`, `/tasks`, `/users`).
+
+## Current limitations and placeholders
+
+- **Project scope**: This repository is a starter project and currently includes only foundational task/user APIs and structure.
+- **Missing part (logging)**: Structured application logging is not implemented yet.
+- **Placeholder (authentication)**: `tasks_router/auth_placeholder.py` is a temporary authentication stub and should be replaced with a real auth mechanism.
