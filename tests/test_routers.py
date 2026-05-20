@@ -10,6 +10,7 @@ from tasks_router.enums.task_statuses import TaskStatus
 from tasks_router.exceptions.custom_exceptions import (
     DatabaseOperationException,
     TaskNotFoundException,
+    UserNotFoundException,
 )
 from tasks_router.routers.system_router import router as system_router
 from tasks_router.routers.task_router import router as task_router
@@ -107,7 +108,6 @@ def test_get_user_success() -> None:
 
 def test_get_user_not_found_maps_to_404() -> None:
     user_service = Mock()
-    from tasks_router.exceptions.custom_exceptions import UserNotFoundException
 
     user_service.get_user.side_effect = UserNotFoundException("alice")
 
