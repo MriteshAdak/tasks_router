@@ -6,9 +6,12 @@ import pytest
 from tasks_router.exceptions.custom_exceptions import (
     DatabaseOperationException,
     TaskNotFoundException,
+    UserNotFoundException,
 )
 from tasks_router.models.task_model import Task
+from tasks_router.models.user_model import User as UserModel
 from tasks_router.repositories.task_repo import TaskRepository
+from tasks_router.repositories.user_repo import UserRepository
 
 
 def test_task_repository_get_all_returns_tasks() -> None:
@@ -85,5 +88,41 @@ def test_task_repository_delete_rolls_back_on_error() -> None:
 
     with pytest.raises(DatabaseOperationException, match="Error deleting task"):
         repository.delete(Mock(spec=Task))
+
+    db_session.rollback.assert_called_once()
+
+
+def test_user_repository_get_all_returns_users() -> None:
+    db_session = Mock()
+    expected_users = [Mock(spec=UserModel)]
+    db_session.query.return_value.all.return_value = expected_users
+
+    repository = UserRepository(db_session)
+
+    result = repository.get_all()
+
+    assert result == expected_users
+
+
+def test_user_repository_get_by_id_raises_not_found() -> None:
+    db_session = Mock()
+    db_session.query.return_value.filter.return_value.first.return_value = None
+
+    repository = UserRepository(db_session)
+
+    with pytest.raises(UserNotFoundException):
+        repository.get_by_id("missing_user")
+
+
+def test_user_repository_create_rolls_back_on_error() -> None:
+    db_session = Mock()
+    db_session.commit.side_effect = RuntimeError("commit failed")
+    repository = UserRepository(db_session)
+
+    with pytest.raises(
+        DatabaseOperationException,
+        match="Error occurred while creating a new user",
+    ):
+        repository.create(Mock(spec=UserModel))
 
     db_session.rollback.assert_called_once()
