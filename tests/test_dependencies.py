@@ -1,5 +1,7 @@
 from unittest.mock import Mock
 
+import pytest
+
 from tasks_router import dependencies
 from tasks_router.database.initiate_db import Database
 from tasks_router.repositories.task_repo import TaskRepository
@@ -8,7 +10,9 @@ from tasks_router.services.task_service import TaskServices
 from tasks_router.services.user_service import UserService
 
 
-def test_get_db_yields_from_global_database(monkeypatch) -> None:
+def test_get_db_yields_from_global_database(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
     session = Mock()
     mocked_db = Mock(spec=Database)
     mocked_db.get_db.return_value = iter([session])
