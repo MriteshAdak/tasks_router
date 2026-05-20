@@ -1,6 +1,7 @@
 """
-TaskServices class that provides business logic for task management operations.
-This module defines the TaskServices class, which interacts with the TaskRepository to perform CRUD operations on Task entities. The TaskServices class also handles the conversion of TaskModel instances to TaskResponse schemas for API responses.
+Task service business logic for task management operations.
+
+The service translates repository models into API schema DTOs.
 """
 
 import uuid
@@ -13,12 +14,26 @@ from tasks_router.exceptions.custom_exceptions import TaskNotFoundException, Dat
 
 class TaskServices:
     def __init__(self, repository: TaskRepository) -> None:
-        """Initialize the TaskServices with a TaskRepository instance."""
-        
+        """Initialize the task service.
+
+        Args:
+            repository: Task repository dependency.
+        """
         self.repository = repository
 
     def get_all(self, user_id: uuid.UUID) -> list[TaskResponse]:
-        """Service for retrieving all tasks for a given user ID."""
+        """Return all tasks for a user.
+
+        Args:
+            user_id: User identifier used for scoped retrieval.
+
+        Returns:
+            Task DTOs for API responses.
+
+        Raises:
+            DatabaseOperationException: If repository access fails.
+            ServiceException: If an unexpected service error occurs.
+        """
 
         try:
             queried_tasks: list[TaskModel] =  self.repository.get_all(user_id)
@@ -32,11 +47,22 @@ class TaskServices:
 
 
     def create(self, task: TaskCreate, user_id: uuid.UUID) -> TaskResponse:
-        """Service for creating a new task in the database."""
-        
-        # TODO: 
-        # 1. Add validation to ensure that the user_id exists in the database before creating a task.
-        # 2. Add validation for due date to ensure that it is not set to a past date.
+        """Create and return a task for a user.
+
+        Args:
+            task: Task DTO from the API layer.
+            user_id: User identifier that owns the task.
+
+        Returns:
+            Persisted task DTO for API responses.
+
+        Raises:
+            DatabaseOperationException: If repository persistence fails.
+            ServiceException: If an unexpected service error occurs.
+        """
+
+        # Validation is deferred to avoid duplicating upcoming user and
+        # date policies that will be centralized in one validator.
 
         new_task_data: dict[str, object] = task.model_dump(exclude_unset=True)
         new_task_data['user_id'] = user_id
@@ -52,7 +78,21 @@ class TaskServices:
 
 
     def update(self, task_id: uuid.UUID, user_id: uuid.UUID, task: TaskUpdate) -> TaskResponse:
-        """Service for updating an existing task in the database."""
+        """Update and return an existing user task.
+
+        Args:
+            task_id: Task identifier to update.
+            user_id: User identifier used for scoped access.
+            task: Partial task DTO with fields to update.
+
+        Returns:
+            Updated task DTO for API responses.
+
+        Raises:
+            TaskNotFoundException: If the task cannot be found.
+            DatabaseOperationException: If repository access fails.
+            ServiceException: If an unexpected service error occurs.
+        """
 
         try:
             existing_task: TaskModel = self.repository.get_by_id(task_id, user_id)
@@ -75,7 +115,17 @@ class TaskServices:
 
 
     def delete(self, task_id: uuid.UUID, user_id: uuid.UUID) -> None:
-        """Service for deleting a task from the database."""
+        """Delete an existing user task.
+
+        Args:
+            task_id: Task identifier to delete.
+            user_id: User identifier used for scoped access.
+
+        Raises:
+            TaskNotFoundException: If the task cannot be found.
+            DatabaseOperationException: If repository access fails.
+            ServiceException: If an unexpected service error occurs.
+        """
 
         try:
             existing_task: TaskModel = self.repository.get_by_id(task_id, user_id)

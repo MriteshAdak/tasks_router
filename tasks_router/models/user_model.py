@@ -1,5 +1,5 @@
 """
-UserModel for SQLAlchemy ORM, representing the 'user' table in the database.
+User model for SQLAlchemy ORM mapped to the user table.
 """
 
 from datetime import UTC, datetime

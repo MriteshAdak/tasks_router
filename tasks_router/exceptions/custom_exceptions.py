@@ -42,7 +42,7 @@ class ServiceException(Exception):
         super().__init__(self.message)
 
 class UserConflictException(Exception):
-    """Exception raised when there is a conflict with an existing user."""
+    """Exception raised when a duplicate user conflict occurs."""
 
     def __init__(self, username: str) -> None:
         self.username = username

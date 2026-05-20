@@ -20,7 +20,18 @@ def get_user(
     username: str,
     user_services: UserService = Depends(get_user_services)
     ) -> User:
-    """Endpoint to retrieve a user by username."""
+    """Fetch a user by username.
+
+    Args:
+        username: Username from route path.
+        user_services: Injected user service dependency.
+
+    Returns:
+        User DTO for API response.
+
+    Raises:
+        HTTPException: If lookup operations fail.
+    """
 
     try:
         user: User = user_services.get_user(username)
@@ -43,7 +54,18 @@ def create_user(
     user: User,
     user_services: UserService = Depends(get_user_services)
     ) -> User:
-    """Endpoint to create a new user."""
+    """Create a new user.
+
+    Args:
+        user: User payload from request body.
+        user_services: Injected user service dependency.
+
+    Returns:
+        Persisted user DTO.
+
+    Raises:
+        HTTPException: If create operations fail.
+    """
 
     try:
         return user_services.create(user)

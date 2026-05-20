@@ -1,6 +1,8 @@
 """
 Repository module for managing User entities in the database.
-This module defines the UserRepository class, which provides methods for performing CRUD operations on User entities using SQLAlchemy ORM.
+
+This module defines UserRepository methods for SQLAlchemy CRUD
+operations on users.
 """
 
 from sqlalchemy.orm import Session
@@ -16,22 +18,36 @@ class UserRepository:
 
         self.db_session = db_session
 
-    # ------------------------------ CRUD operations ------------------------------
+    # CRUD operation sections keep repository responsibilities grouped.
 
-    # ------------------------------ Read operations ------------------------------
-    
-    # Will not be used in the current implementation, but added for completeness and future use.
+    # Read operations support current and planned service use cases.
     def get_all(self) -> list[UserModel]:
-        """Retrieve all users."""
-        
+        """Retrieve all users.
+
+        Returns:
+            Persisted users from the database session.
+
+        Raises:
+            DatabaseOperationException: If the database query fails.
+        """
         try:
             return self.db_session.query(UserModel).all()
         except Exception as e:
             raise DatabaseOperationException(f"Error occurred while fetching users: {str(e)}") from e
 
     def get_by_id(self, username: str) -> UserModel:
-        """Retrieve a user by their username."""
-        
+        """Retrieve a user by username.
+
+        Args:
+            username: Unique username used for lookup.
+
+        Returns:
+            The matching user model.
+
+        Raises:
+            UserNotFoundException: If no user exists for the username.
+            DatabaseOperationException: If the database query fails.
+        """
         try:
             user: UserModel | None = self.db_session.query(UserModel).filter(UserModel.username == username).first()
             if not user:
@@ -42,10 +58,19 @@ class UserRepository:
         except Exception as e:
             raise DatabaseOperationException(f"Error occurred while fetching user with username: {username}: {str(e)}") from e
 
-    # ------------------------------ Write operations ------------------------------
-    
+    # Write operations mutate database state for user entities.
     def create(self, user: UserModel) -> UserModel:
-        """Create a new user in the database."""
+        """Create a user record.
+
+        Args:
+            user: User model prepared for persistence.
+
+        Returns:
+            The persisted and refreshed user model.
+
+        Raises:
+            DatabaseOperationException: If persistence fails.
+        """
 
         try:
             self.db_session.add(user)
@@ -56,12 +81,20 @@ class UserRepository:
             self.db_session.rollback()
             raise DatabaseOperationException(f"Error occurred while creating a new user: {str(e)}") from e
 
-    # Will not be used in the current implementation, but added for completeness and future use.
     def update(self, user: UserModel) -> UserModel:
-        """Update an existing user in the database."""
-        
+        """Update an existing user.
+
+        Args:
+            user: User model containing latest state.
+
+        Returns:
+            The merged and refreshed user model.
+
+        Raises:
+            DatabaseOperationException: If update persistence fails.
+        """
         try:
-            merged_user = self.db_session.merge(user) # Add logger here
+            merged_user = self.db_session.merge(user)  # Add logger here
             self.db_session.commit()
             self.db_session.refresh(merged_user)
             return merged_user
@@ -69,10 +102,15 @@ class UserRepository:
             self.db_session.rollback()
             raise DatabaseOperationException(f"Error occurred while updating the user: {str(e)}") from e
 
+    def delete(self, user: UserModel) -> None:
+        """Delete a user.
 
-    # Will not be used in the current implementation, but added for completeness and future use.
-    def delete(self, user: UserModel):
-        """Delete a user from the database."""
+        Args:
+            user: Persisted user model to remove.
+
+        Raises:
+            DatabaseOperationException: If delete persistence fails.
+        """
 
         try:
             self.db_session.delete(user)
