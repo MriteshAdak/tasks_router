@@ -214,7 +214,7 @@ def test_user_repository_get_all_wraps_database_errors() -> None:
         repository.get_all()
 
 
-def test_user_repository_get_by_id_returns_user_and_filters_by_username() -> None:
+def test_user_repository_get_by_id_returns_user_when_username_exists() -> None:
     # Arrange
     db_session = Mock()
     username = "test_user"
