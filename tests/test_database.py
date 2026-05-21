@@ -61,7 +61,7 @@ def test_settings_get_db_url_preserves_special_characters() -> None:
 
     assert (
         settings.get_db_url()
-        == "postgresql+psycopg2://user+name@corp:p@ss:word/with?chars@localhost:5432/tasks_db"
+        == "postgresql+psycopg2://user%2Bname%40corp:p%40ss%3Aword%2Fwith%3Fchars@localhost:5432/tasks_db"
     )
 
 

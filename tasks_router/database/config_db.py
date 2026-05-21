@@ -2,7 +2,10 @@
 Configuration module for database connection settings. This module defines a Settings class that uses Pydantic to manage database connection parameters, including host, port, username, password, database name, and SSL configuration. The Settings class provides methods to construct the database URL and connection arguments based on the provided settings. An instance of the Settings class is created at the end of the module for use in other parts of the application.
 """
 
+from urllib.parse import quote
+
 from pydantic_settings import BaseSettings, SettingsConfigDict
+
 
 class Settings(BaseSettings):
 
@@ -26,8 +29,10 @@ class Settings(BaseSettings):
 
         if self.local:
             return "sqlite:///./local.db"
-        
-        return f"postgresql+psycopg2://{self.username}:{self.password}@{self.host}:{self.port}/{self.database}"
+
+        encoded_username = quote(self.username, safe="")
+        encoded_password = quote(self.password, safe="")
+        return f"postgresql+psycopg2://{encoded_username}:{encoded_password}@{self.host}:{self.port}/{self.database}"
     
     def get_conn_args(self) -> dict[str, str]:
         """Constructs the connection arguments from the settings."""
