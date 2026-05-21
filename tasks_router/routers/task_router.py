@@ -14,9 +14,12 @@ from tasks_router.exceptions.custom_exceptions import DatabaseOperationException
 
 router: APIRouter = APIRouter(prefix="/tasks", tags=["Tasks"])
 
-# TODO: 
-# 1. Add authentication and authorization dependencies to ensure that users can only access their own tasks.
-# 2. Update routers per the new updates to the models and schemas. user_id should be passed separately from the request body using the placeholder auth module.
+# TODO:
+# 1. Add auth dependencies so users can only access their own tasks.
+# 2. Align router contracts with model/schema updates so user_id
+#    remains injected from auth instead of request body payloads.
+# We keep placeholder auth to preserve endpoint shape until identity
+# integration lands, which avoids breaking API clients during rollout.
 
 @router.get(
         "/",
@@ -27,7 +30,18 @@ def get_tasks(
     user_id: uuid.UUID = Depends(get_current_user_id),
     task_services: TaskServices = Depends(get_task_services)
     ) -> list[TaskResponse]:
-    """Endpoint to retrieve all tasks for a given user ID."""
+    """Fetch all tasks for the current user.
+
+    Args:
+        user_id: Auth-scoped user identifier.
+        task_services: Injected task service dependency.
+
+    Returns:
+        Task DTO list for API responses.
+
+    Raises:
+        HTTPException: If service or database operations fail.
+    """
 
     try:
         return task_services.get_all(user_id)
@@ -49,7 +63,19 @@ def create_task(
     user_id: uuid.UUID = Depends(get_current_user_id),
     task_services: TaskServices = Depends(get_task_services)
     ) -> TaskResponse:
-    """Endpoint to create a new task."""
+    """Create a task for the current user.
+
+    Args:
+        task: Task payload from request body.
+        user_id: Auth-scoped user identifier.
+        task_services: Injected task service dependency.
+
+    Returns:
+        Persisted task DTO.
+
+    Raises:
+        HTTPException: If service or database operations fail.
+    """
 
     try:
         created_task: TaskResponse = task_services.create(task, user_id)
@@ -73,7 +99,20 @@ def update_task(
     user_id: uuid.UUID = Depends(get_current_user_id),
     task_services: TaskServices = Depends(get_task_services)
     ) -> TaskResponse:
-    """Endpoint to update an existing task."""
+    """Update an existing task for the current user.
+
+    Args:
+        task_id: Task identifier from route path.
+        task: Partial task payload from request body.
+        user_id: Auth-scoped user identifier.
+        task_services: Injected task service dependency.
+
+    Returns:
+        Updated task DTO.
+
+    Raises:
+        HTTPException: If lookup or update operations fail.
+    """
 
     try:
         updated_task: TaskResponse = task_services.update(task_id, user_id, task)
@@ -96,7 +135,16 @@ def delete_task(
     user_id: uuid.UUID = Depends(get_current_user_id),
     task_services: TaskServices = Depends(get_task_services)
     ) -> None:
-    """Endpoint to delete a task by ID."""
+    """Delete a task for the current user.
+
+    Args:
+        task_id: Task identifier from route path.
+        user_id: Auth-scoped user identifier.
+        task_services: Injected task service dependency.
+
+    Raises:
+        HTTPException: If lookup or deletion operations fail.
+    """
     
     try:
         task_services.delete(task_id, user_id)

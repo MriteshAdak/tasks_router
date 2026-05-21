@@ -1,5 +1,8 @@
 """
-Configuration module for database connection settings. This module defines a Settings class that uses Pydantic to manage database connection parameters, including host, port, username, password, database name, and SSL configuration. The Settings class provides methods to construct the database URL and connection arguments based on the provided settings. An instance of the Settings class is created at the end of the module for use in other parts of the application.
+Configuration for database connection settings.
+
+Settings is loaded from environment variables and used to build
+database URL and connection arguments.
 """
 
 from pydantic_settings import BaseSettings, SettingsConfigDict
@@ -18,11 +21,17 @@ class Settings(BaseSettings):
 
     model_config = SettingsConfigDict(env_file=".env")
 
-    # TODO: Add logging here to log the loaded settings, ensuring that sensitive information like passwords is not logged. 
-    # Adding validation for the settings to ensure they are correct before attempting to connect to the database.
-    
+    # TODO: Add logging here to log the loaded settings, ensuring
+    # that sensitive information like passwords is not logged.
+    # Adding validation for the settings to ensure they are correct
+    # before attempting to connect to the database.
+
     def get_db_url(self) -> str:
-        """Constructs the database URL from the settings."""
+        """Build the database URL for SQLAlchemy.
+
+        Returns:
+            SQLAlchemy connection URL for local or remote DB use.
+        """
 
         if self.local:
             return "sqlite:///./local.db"
@@ -30,7 +39,11 @@ class Settings(BaseSettings):
         return f"postgresql+psycopg2://{self.username}:{self.password}@{self.host}:{self.port}/{self.database}"
     
     def get_conn_args(self) -> dict[str, str]:
-        """Constructs the connection arguments from the settings."""
+        """Build optional connection arguments.
+
+        Returns:
+            DB driver connection arguments for SSL-enabled environments.
+        """
 
         if self.local:
             return {}

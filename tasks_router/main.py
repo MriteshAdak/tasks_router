@@ -1,4 +1,5 @@
 from contextlib import asynccontextmanager
+from collections.abc import AsyncIterator
 
 from fastapi import FastAPI
 
@@ -9,8 +10,15 @@ from tasks_router.database.initiate_db import Base
 from tasks_router.dependencies import db
 
 @asynccontextmanager
-async def lifespan(app: FastAPI):
-    """Lifespan function to handle application startup and shutdown events. It creates the database tables on startup."""
+async def lifespan(app: FastAPI) -> AsyncIterator[None]:
+    """Manage startup and shutdown DB resources.
+
+    Args:
+        app: FastAPI app instance that owns the lifespan context.
+
+    Yields:
+        None while the app serves requests.
+    """
     engine = db.get_engine()
     Base.metadata.create_all(engine)
     yield

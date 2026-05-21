@@ -1,5 +1,5 @@
 """
-TaskModel for SQLAlchemy ORM, representing the 'task' table in the database.
+Task model for SQLAlchemy ORM mapped to the task table.
 """
 
 import uuid

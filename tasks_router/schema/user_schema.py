@@ -1,5 +1,5 @@
 """
-Schema definitions for user-related operations
+Schema definitions for user-related operations.
 """
 
 import uuid
@@ -7,6 +7,7 @@ import uuid
 from pydantic import BaseModel, Field, AliasChoices, ConfigDict
 
 class User(BaseModel):
+    """Schema used for user create and response payloads."""
 
     id: uuid.UUID
 

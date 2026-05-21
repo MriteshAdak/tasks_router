@@ -1,5 +1,5 @@
 """
-Schema definitions for task-related operations
+Schema definitions for task-related operations.
 """
 
 import uuid
@@ -10,6 +10,8 @@ from datetime import datetime
 from tasks_router.enums.task_statuses import TaskStatus
 
 class TaskCreate(BaseModel):
+    """Input schema for creating a task."""
+
     title: str
     status: TaskStatus = TaskStatus.TODO
     due_date: datetime | None = Field(
@@ -22,6 +24,8 @@ class TaskCreate(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
 class TaskUpdate(BaseModel):
+    """Input schema for updating a task."""
+
     title: str | None = None
     status: TaskStatus | None = None
     due_date: datetime | None = Field(
@@ -34,9 +38,11 @@ class TaskUpdate(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
 class TaskResponse(BaseModel):
+    """Response schema returned for task resources."""
+
     id: uuid.UUID
     title: str
     status: TaskStatus
     due_date: datetime | None
-    # add audit fields if and when needed
+    # Audit fields are omitted until API contracts require them.
     model_config = ConfigDict(from_attributes=True)

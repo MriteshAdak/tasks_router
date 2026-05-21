@@ -1,5 +1,8 @@
 """
-This module defines the Database class, which manages the SQLAlchemy engine and session factory for the application. It provides methods to create and cache the engine and session factory, as well as a generator function to yield database sessions for use in request handling.
+Database engine and session factory management.
+
+The Database class centralizes engine and session creation so request
+handlers can reuse a consistent connection strategy.
 """
 
 from typing import Generator
@@ -16,7 +19,11 @@ class Base(DeclarativeBase):
 class Database:
 
     def __init__(self, settings: Settings) -> None:
-        """Initializes the Database instance with the provided settings."""
+        """Initialize the database manager.
+
+        Args:
+            settings: Resolved database settings.
+        """
 
         self.db_url = settings.get_db_url()
         self.conn_args = settings.get_conn_args()
@@ -24,10 +31,15 @@ class Database:
         self._session_factory: sessionmaker[Session] | None = None
 
     def get_engine(self) -> Engine:
-        """Returns a cached Engine instance. Creates one if it doesn't exist."""
+        """Return a cached SQLAlchemy engine.
 
-        # TODO: Implement exception handling and logging for database connection issues. Consider retry logic for transient errors.
-        if self._engine is None: # Move all these configuration params to a config file.
+        Returns:
+            Initialized SQLAlchemy engine instance.
+        """
+
+        # TODO: Implement exception handling and logging for database
+        # connection issues. Consider retry logic for transient errors.
+        if self._engine is None:  # Move configuration params to config.
             self._engine = create_engine(
                 self.db_url,
                 echo=True,
@@ -38,11 +50,16 @@ class Database:
             )
         return self._engine
 
-    # TODO: Implement exception handling and logging for session creation issues.
+    # TODO: Implement exception handling and logging for session
+    # creation issues.
     def get_session_factory(self) -> sessionmaker[Session]:
-        """Returns a cached sessionmaker bound to the engine."""
-        
-        if self._session_factory is None: # Move all these configuration params to a config file.
+        """Return a cached session factory.
+
+        Returns:
+            Session factory bound to the shared engine.
+        """
+
+        if self._session_factory is None:  # Move configuration params.
             self._session_factory = sessionmaker(
                 self.get_engine(),
                 autocommit=False,
@@ -50,9 +67,14 @@ class Database:
             )
         return self._session_factory
 
-    # TODO: decide if commit and rollback should be handled here or in the service layer.
-    def get_db(self) -> Generator[Session, None, None]: 
-        """Generates a new database session for each request. The session is closed after use."""
+    # TODO: decide if commit and rollback should be handled here or in
+    # the service layer.
+    def get_db(self) -> Generator[Session, None, None]:
+        """Yield a database session and close it after use.
+
+        Yields:
+            Request-scoped SQLAlchemy session.
+        """
 
         db: Session = self.get_session_factory()()
         try:
