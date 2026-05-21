@@ -37,7 +37,8 @@ class Database:
             Initialized SQLAlchemy engine instance.
         """
 
-        # Caching one engine avoids pool fragmentation across requests.
+        # TODO: Implement exception handling and logging for database
+        # connection issues. Consider retry logic for transient errors.
         if self._engine is None:  # Move configuration params to config.
             self._engine = create_engine(
                 self.db_url,
@@ -49,6 +50,8 @@ class Database:
             )
         return self._engine
 
+    # TODO: Implement exception handling and logging for session
+    # creation issues.
     def get_session_factory(self) -> sessionmaker[Session]:
         """Return a cached session factory.
 
@@ -64,7 +67,8 @@ class Database:
             )
         return self._session_factory
 
-    # Session lifecycle stays centralized to guarantee release on error.
+    # TODO: decide if commit and rollback should be handled here or in
+    # the service layer.
     def get_db(self) -> Generator[Session, None, None]:
         """Yield a database session and close it after use.
 

@@ -21,7 +21,11 @@ class Settings(BaseSettings):
 
     model_config = SettingsConfigDict(env_file=".env")
 
-    # Validation is deferred so runtime profile loading stays simple.
+    # TODO: Add logging here to log the loaded settings, ensuring
+    # that sensitive information like passwords is not logged.
+    # Adding validation for the settings to ensure they are correct
+    # before attempting to connect to the database.
+
     def get_db_url(self) -> str:
         """Build the database URL for SQLAlchemy.
 
