@@ -43,11 +43,12 @@ class Settings(BaseSettings):
     def get_db_url(self) -> str:
         """Constructs the database URL from the settings."""
 
-        safe_username = quote_plus(self.username)
-        safe_password = quote_plus(self.password.get_secret_value())
         if self.url is not None:
             return self.url
-        
+
+        safe_username = quote_plus(self.username)
+        safe_password = quote_plus(self.password.get_secret_value())
+
         return f"postgresql+psycopg2://{safe_username}:{safe_password}@{self.host}:{self.port}/{self.database}"
 
     def get_conn_args(self) -> dict[str, str]:
