@@ -19,6 +19,7 @@ class Database:
         self._engine: Engine | None = None
         self._session_factory: sessionmaker[Session] | None = None
         
+    # A reivew from claude suggests using thread locking for the engine and session factory creation to ensure thread safety in a multi-threaded environment. This is a good point, especially if the application will be running in a multi-threaded context. Implementing thread locking can
 
     def get_engine(self) -> Engine:
         """Returns a cached Engine instance. Creates one if it doesn't exist."""
