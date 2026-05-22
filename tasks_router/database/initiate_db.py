@@ -5,12 +5,9 @@ This module defines the Database class, which manages the SQLAlchemy engine and 
 from typing import Generator
 
 from sqlalchemy import create_engine, Engine
-from sqlalchemy.orm import Session, sessionmaker, DeclarativeBase
+from sqlalchemy.orm import Session, sessionmaker
 
 from .config_db import Settings
-
-class Base(DeclarativeBase):
-    pass
 
 
 class Database:

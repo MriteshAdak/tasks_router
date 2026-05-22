@@ -5,7 +5,7 @@ from fastapi import FastAPI
 from tasks_router.routers.task_router import router as task_router
 from tasks_router.routers.user_router import router as user_router
 from tasks_router.routers.system_router import router as system_router
-from tasks_router.database.initiate_db import Base
+from tasks_router.models.base_model import Base
 from tasks_router.dependencies import db
 
 @asynccontextmanager
