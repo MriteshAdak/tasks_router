@@ -14,10 +14,6 @@ from tasks_router.exceptions.custom_exceptions import DatabaseOperationException
 
 router: APIRouter = APIRouter(prefix="/tasks", tags=["Tasks"])
 
-# TODO: 
-# 1. Add authentication and authorization dependencies to ensure that users can only access their own tasks.
-# 2. Update routers per the new updates to the models and schemas. user_id should be passed separately from the request body using the placeholder auth module.
-
 @router.get(
         "/",
         response_model=list[TaskResponse],
