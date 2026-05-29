@@ -1,96 +1,84 @@
-# tasks_router
+# Tasks Router
 
-A minimal FastAPI service implementing an async SQLAlchemy + PostgreSQL scaffold for managing tasks and users.
+A FastAPI service implementing a layered architecture pattern for managing tasks and users with PostgreSQL. 
 
-This repository provides a compact, opinionated starting point for building REST APIs with async database access, Alembic migrations, and a layered project structure (routers, services, repositories, models, schemas).
+This repository provides a clean, well-structured, and opinionated foundation for building scalable REST APIs equipped with synchronous database access (SQLAlchemy + psycopg2), database migrations (Alembic), structured logging, and dependency management via PDM.
 
-**Key features**
-- Async FastAPI application (`tasks_router.main`) using `uvicorn` for development.
-- Async SQLAlchemy models and repositories (`tasks_router.models`, `tasks_router.repositories`).
-- Alembic migrations configured at the project root (`alembic.ini`, `migrations/`).
-- Clear separation: routers, services, repositories, models, schemas.
-- Basic test suite (see `tests/`).
+## Key Features
+- **FastAPI Framework**: Modern, fast web framework for building APIs.
+- **SQLAlchemy ORM**: Synchronous database interactions, configured for PostgreSQL (`psycopg2-binary`).
+- **Alembic Migrations**: Out-of-the-box support for managing schema iterations (`alembic.ini`, `migrations/`).
+- **Layered Components Pattern**: Distinct boundaries across Routers, Services, Repositories, Schemas, and Models.
+- **Structured Logging**: Deeply integrated `structlog` paired with `asgi-correlation-id` for structured context and request tracking.
+- **Serverless Support**: Pre-configured with `mangum` and `boto3` capabilities, preparing the API for AWS Lambda deployment.
+- **Dependency Management**: Powered by `PDM` via `pyproject.toml`.
+- **Dockerized**: Includes a functional Dockerfile relying on a Python 3.12-slim base.
 
-Getting started
----------------
+## Getting Started
 
-Prerequisites
-- Python 3.10+ recommended
+### Prerequisites
+- Python 3.12+
 - PostgreSQL database
-- A virtual environment (recommended)
+- PDM package manager
 
-Quickstart (development)
-1. Create and activate a virtual environment:
+### Quickstart (Local Development)
+1. **Clone and Setup**  
+   Using PDM will optionally create a virtual environment and load dependencies inside it automatically:
+   ```bash
+   pdm install
+   ```
 
-	python -m venv .venv
-	source .venv/bin/activate
+2. **Configure Environment Variables**  
+   Create a `.env` file referencing the Database Settings configured in `infrastructure/configurations.py` (using prefix `DB_`):
+   ```dotenv
+   # Example .env configuration
+   DB_HOST=localhost
+   DB_PORT=5432
+   DB_USERNAME=user
+   DB_PASSWORD=password
+   DB_DATABASE=dbname
+   
+   # Or alternatively, you can pass a full connection URL:
+   DB_URL=postgresql://user:password@localhost:5432/dbname
+   ```
 
-2. Install dependencies (use your preferred tool; this project uses `pyproject.toml`):
+3. **Database Setup & Migrations**  
+   First run migrations seamlessly:
+   ```bash
+   pdm run alembic upgrade head
+   ```
 
-	pip install -r requirements.txt
+4. **Run the Application**  
+   Fire up the development server using PDM scripts:
+   ```bash
+   pdm run dev
+   ```
+   *Alternatively, standard uvicorn runs typically as: `uvicorn tasks_router.main:app --reload --host 0.0.0.0 --port 8000`*
 
-3. Configure environment variables (example):
+## Project Structure Overview
 
-	export DATABASE_URL=postgresql+asyncpg://user:password@localhost:5432/dbname
-	export ALEMBIC_INI=alembic.ini
+```text
+tasks_router/
+├── main.py                     # FastAPI application factory and main entrypoint
+├── routers/                    # API route definitions (system, task, user endpoints)
+├── services/                   # Business logic encapsulating rules (task_service, user_service)
+├── repositories/               # Database interactions handling CRUD (task_repo, user_repo)
+├── models/                     # SQLAlchemy ORM definitions mapping tables
+├── schema/                     # Pydantic models handling request/response validations
+├── infrastructure/             # Database initialization and environment configurations
+├── middleware/                 # Middleware extensions (e.g., CORS)
+├── enums/                      # Constant enumerations (ssl modes, task statuses)
+├── exceptions/                 # Custom error domains and logic
+├── logging_config.py           # Structlog and correlation ID setup
+└── dependencies.py             # Route injectors for DB sessions & logic
+```
 
-	Note: The project loads configuration from `tasks_router.infrastructure.configurations` — check it for additional settings.
+At the project root, you will additionally find the Alembic migration environments (`migrations/` and `alembic.ini`), PDM settings (`pyproject.toml`), a generic container definition (`dockerfile`), and the `tests/` directory ensuring system robustness.
 
-4. Apply database migrations:
-
-	alembic upgrade head
-
-5. Run the app (development):
-
-	uvicorn tasks_router.main:app --reload --host 0.0.0.0 --port 8000
-
-Project structure overview
---------------------------
-- `tasks_router/main.py` — FastAPI app factory and entrypoint.
-- `tasks_router/routers/` — API route definitions (`task_router.py`, `user_router.py`, `system_router.py`).
-- `tasks_router/services/` — Business logic layer (`task_service.py`, `user_service.py`).
-- `tasks_router/repositories/` — DB access layer (`task_repo.py`, `user_repo.py`).
-- `tasks_router/models/` — SQLAlchemy ORM models (`task_model.py`, `user_model.py`, `base_model.py`).
-- `tasks_router/schema/` — Pydantic request/response schemas.
-- `tasks_router/infrastructure/` — DB initialization and configuration helpers (`initiate_db.py`, `configurations.py`).
-- `migrations/` and `alembic.ini` — Alembic migration environment and versions.
-- `tests/` — Test suite (unit + integration-style tests).
-
-Configuration & conventions
--------------------------
-- Database connections use SQLAlchemy's async engine with `asyncpg`.
-- Migrations: use Alembic from project root; migration scripts are under `migrations/versions`.
-- Logging configuration is in `tasks_router/logging_config.py`.
-
-Testing
--------
-Run the test suite with `pytest` from the project root. Ensure you have a test database configured (the tests may expect a local dev DB or use fixtures to create temporary DB resources).
-
-Example:
-
-	pytest -q
-
-Notes & next steps
-------------------
-- Add a `requirements.txt` or ensure `pyproject.toml` contains the exact dependencies for reproducible installs.
-- Consider `.env` support or a Docker compose file for local development DB orchestration.
-- Add CI pipeline steps to run tests and migrations automatically.
-
-License
--------
-This project has no license file included. Add a `LICENSE` if you intend to open-source this repository.
-
-Where to look in the code
--------------------------
-- App entry: [tasks_router/main.py](tasks_router/main.py#L1)
-- DB init: [tasks_router/infrastructure/initiate_db.py](tasks_router/infrastructure/initiate_db.py#L1)
-- Example router: [tasks_router/routers/task_router.py](tasks_router/routers/task_router.py#L1)
-- Models: [tasks_router/models/task_model.py](tasks_router/models/task_model.py#L1)
-
-If you'd like, I can:
-- Run the test suite and report results.
-- Add a `requirements.txt` or update `pyproject.toml` with pinned versions.
-- Create a Docker Compose developer environment (Postgres + service).
-
-----
-Generated on 2026-05-29.
+## Working with Docker
+To build and execute with Docker based on the generated requirements bundle:
+```bash
+docker build -t tasks-router .
+docker run -p 8000:8000 --env-file .env tasks-router
+```
+*(ensure `requirements.txt.lock` is up to date ahead of builds via `pdm export`)*
