@@ -4,6 +4,7 @@ Task management API endpoints for CRUD operations on tasks.
 
 import uuid
 
+import structlog
 from fastapi import APIRouter, Depends, status, HTTPException
 
 from tasks_router.services.task_service import TaskServices
@@ -13,6 +14,7 @@ from tasks_router.dependencies import get_task_services
 from tasks_router.exceptions.custom_exceptions import DatabaseOperationException, TaskNotFoundException, ServiceException
 
 router: APIRouter = APIRouter(prefix="/tasks", tags=["Tasks"])
+logger = structlog.get_logger(__name__)
 
 @router.get(
         "/",
@@ -26,12 +28,18 @@ def get_tasks(
     """Endpoint to retrieve all tasks for a given user ID."""
 
     try:
-        return task_services.get_all(user_id)
+        logger.info("Retrieving all tasks", user_id=str(user_id))
+        tasks = task_services.get_all(user_id)
+        logger.info("Tasks retrieved", user_id=str(user_id), task_count=len(tasks))
+        return tasks
     except DatabaseOperationException as e:
+        logger.error("DB Ops error while retrieving tasks", user_id=str(user_id), error=str(e))
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
     except ServiceException as e:
+        logger.error("Service error while retrieving tasks", user_id=str(user_id), error=str(e))
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
     except Exception as e:
+        logger.exception("Unexpected error while retrieving tasks", user_id=str(user_id))
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="An unexpected error occurred while retrieving tasks") from e
 
 
@@ -48,13 +56,18 @@ def create_task(
     """Endpoint to create a new task."""
 
     try:
+        logger.info("Creating new task", user_id=str(user_id))
         created_task: TaskResponse = task_services.create(task, user_id)
+        logger.info("Task created", user_id=str(user_id), task_id=str(created_task.id))
         return created_task
     except DatabaseOperationException as e:
+        logger.error("DB Ops error while creating task", user_id=str(user_id), error=str(e))
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
     except ServiceException as e:
+        logger.error("Service error while creating task", user_id=str(user_id), error=str(e))
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
     except Exception as e:
+        logger.exception("Unexpected error while creating task", user_id=str(user_id))
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="An unexpected error occurred while creating the task") from e
 
 
@@ -72,15 +85,21 @@ def update_task(
     """Endpoint to update an existing task."""
 
     try:
+        logger.info("Updating task", user_id=str(user_id), task_id=str(task_id))
         updated_task: TaskResponse = task_services.update(task_id, user_id, task)
+        logger.info("Task updated", user_id=str(user_id), task_id=str(task_id))
         return updated_task
     except TaskNotFoundException:
+        logger.warning("Task not found", user_id=str(user_id), task_id=str(task_id))
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Task with ID {task_id} not found")
     except DatabaseOperationException as e:
+        logger.error("DB Ops error while updating task", user_id=str(user_id), task_id=str(task_id), error=str(e))
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
     except ServiceException as e:
+        logger.error("Service error while updating task", user_id=str(user_id), task_id=str(task_id), error=str(e))
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
     except Exception as e:
+        logger.exception("Unexpected error while updating task", user_id=str(user_id), task_id=str(task_id))
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="An unexpected error occurred while updating the task") from e
 
 @router.delete(
@@ -95,12 +114,18 @@ def delete_task(
     """Endpoint to delete a task by ID."""
     
     try:
+        logger.info("Deleting task", user_id=str(user_id), task_id=str(task_id))
         task_services.delete(task_id, user_id)
+        logger.info("Task deleted", user_id=str(user_id), task_id=str(task_id))
     except TaskNotFoundException:
+        logger.warning("Task not found", user_id=str(user_id), task_id=str(task_id))
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Task with ID {task_id} not found")
     except DatabaseOperationException as e:
+        logger.error("DB Ops error while deleting task", user_id=str(user_id), task_id=str(task_id), error=str(e))
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
     except ServiceException as e:
+        logger.error("Service error while deleting task", user_id=str(user_id), task_id=str(task_id), error=str(e))
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
     except Exception as e:
+        logger.exception("Unexpected error while deleting task", user_id=str(user_id), task_id=str(task_id))
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="An unexpected error occurred while deleting the task") from e
