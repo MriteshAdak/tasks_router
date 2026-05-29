@@ -5,6 +5,7 @@ This module defines the TaskServices class, which interacts with the TaskReposit
 
 import uuid
 
+import structlog
 from tasks_router.models.task_model import Task as TaskModel
 from tasks_router.schema.task_schema import TaskCreate, TaskUpdate, TaskResponse
 from tasks_router.repositories.task_repo import TaskRepository
@@ -16,15 +17,20 @@ class TaskServices:
         """Initialize the TaskServices with a TaskRepository instance."""
         
         self.repository = repository
+        self._logger = structlog.get_logger(__name__)
 
     def get_all(self, user_id: uuid.UUID) -> list[TaskResponse]:
         """Service for retrieving all tasks for a given user ID."""
 
         try:
+            self._logger.debug("task_services.get_all", user_id=str(user_id))
             queried_tasks: list[TaskModel] =  self.repository.get_all(user_id)
             if not queried_tasks:
+                self._logger.info("task_services.get_all.empty", user_id=str(user_id))
                 return []
-            return convert_task_models_to_responses_dto(queried_tasks)
+            responses = convert_task_models_to_responses_dto(queried_tasks)
+            self._logger.info("task_services.get_all.success", user_id=str(user_id), task_count=len(responses))
+            return responses
         except DatabaseOperationException:
             raise
         except Exception as e:
@@ -43,8 +49,11 @@ class TaskServices:
         new_task: TaskModel = TaskModel(**new_task_data)
 
         try:
+            self._logger.debug("task_services.create", user_id=str(user_id))
             created_task: TaskModel = self.repository.create(new_task)
-            return convert_task_model_to_response_dto(created_task)
+            response = convert_task_model_to_response_dto(created_task)
+            self._logger.info("task_services.create.success", user_id=str(user_id), task_id=str(created_task.id))
+            return response
         except DatabaseOperationException:
             raise
         except Exception as e:
@@ -55,6 +64,7 @@ class TaskServices:
         """Service for updating an existing task in the database."""
 
         try:
+            self._logger.debug("task_services.update.lookup", user_id=str(user_id), task_id=str(task_id))
             existing_task: TaskModel = self.repository.get_by_id(task_id, user_id)
         except TaskNotFoundException:
             raise
@@ -66,8 +76,11 @@ class TaskServices:
             setattr(existing_task, key, value)
         
         try:
+            self._logger.debug("task_services.update", user_id=str(user_id), task_id=str(task_id))
             updated_task: TaskModel = self.repository.update(existing_task)
-            return convert_task_model_to_response_dto(updated_task)
+            response = convert_task_model_to_response_dto(updated_task)
+            self._logger.info("task_services.update.success", user_id=str(user_id), task_id=str(task_id))
+            return response
         except DatabaseOperationException:
             raise
         except Exception as e:
@@ -78,6 +91,7 @@ class TaskServices:
         """Service for deleting a task from the database."""
 
         try:
+            self._logger.debug("task_services.delete.lookup", user_id=str(user_id), task_id=str(task_id))
             existing_task: TaskModel = self.repository.get_by_id(task_id, user_id)
         except TaskNotFoundException:
             raise
@@ -85,7 +99,9 @@ class TaskServices:
             raise
 
         try:
+            self._logger.debug("task_services.delete", user_id=str(user_id), task_id=str(task_id))
             self.repository.delete(existing_task)
+            self._logger.info("task_services.delete.success", user_id=str(user_id), task_id=str(task_id))
         except DatabaseOperationException:
             raise
         except Exception as e:
