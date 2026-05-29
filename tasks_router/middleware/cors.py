@@ -13,4 +13,5 @@ def register_cors_middleware(app: FastAPI) -> None:
         allow_origins=["*"],
         allow_methods=["*"],
         allow_headers=["*"],
+        # allow_credentials=True,
     )
