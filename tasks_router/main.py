@@ -14,6 +14,7 @@ from tasks_router.routers.user_router import router as user_router
 from tasks_router.routers.system_router import router as system_router
 from tasks_router.models.base_model import Base
 from tasks_router.dependencies import db
+from tasks_router.middleware.cors import register_cors_middleware
 
 configure_logging()
 logger = structlog.get_logger(__name__)
@@ -35,6 +36,8 @@ app = FastAPI(
     redirect_slashes=False,
     lifespan=lifespan
 )
+
+register_cors_middleware(app)
 
 
 @app.middleware("http")
