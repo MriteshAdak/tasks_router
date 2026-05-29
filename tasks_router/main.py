@@ -1,5 +1,6 @@
 from contextlib import asynccontextmanager
 # from mangum import Mangum
+import structlog
 from fastapi import FastAPI
 from asgi_correlation_id import CorrelationIdMiddleware
 
@@ -15,13 +16,16 @@ from tasks_router.models.base_model import Base
 from tasks_router.dependencies import db
 
 configure_logging()
+logger = structlog.get_logger(__name__)
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Lifespan function to handle application startup and shutdown events. It creates the database tables on startup."""
     engine = db.get_engine()
+    logger.info("app.startup")
     Base.metadata.create_all(engine)
     yield
+    logger.info("app.shutdown")
     engine.dispose()
 
 app = FastAPI(
