@@ -5,6 +5,7 @@ Configuration module for database connection settings. This module defines a Set
 from typing import Optional
 from urllib.parse import quote_plus
 
+import structlog
 from pydantic_settings import BaseSettings, SettingsConfigDict
 from pydantic import SecretStr
 
@@ -47,10 +48,19 @@ class Settings(BaseSettings):
         """Constructs the database URL from the settings."""
 
         if self.url is not None:
+            structlog.get_logger(__name__).debug("db.settings.url_provided")
             return self.url
 
         safe_username = quote_plus(self.username)
         safe_password = quote_plus(self.password.get_secret_value())
+
+        structlog.get_logger(__name__).debug(
+            "db.settings.url_constructed",
+            host=self.host,
+            port=self.port,
+            database=self.database,
+            sslmode=self.sslmode,
+        )
 
         return f"postgresql+psycopg2://{safe_username}:{safe_password}@{self.host}:{self.port}/{self.database}"
 
@@ -58,13 +68,16 @@ class Settings(BaseSettings):
         """Constructs the connection arguments from the settings."""
 
         if self.sslmode is None:
+            structlog.get_logger(__name__).debug("db.settings.ssl.disabled")
             return {}
         elif self.sslmode in ("verify-ca", "verify-full"):
+            structlog.get_logger(__name__).debug("db.settings.ssl.verify", sslmode=self.sslmode)
             return {
                 "sslmode": self.sslmode,
                 "sslrootcert": self.sslrootcert
             }
         else:
+            structlog.get_logger(__name__).debug("db.settings.ssl.enabled", sslmode=self.sslmode)
             return {
                 "sslmode": self.sslmode
             }
