@@ -24,7 +24,8 @@ async def lifespan(app: FastAPI):
     """Lifespan function to handle application startup and shutdown events. It creates the database tables on startup."""
     engine = db.get_engine()
     logger.info("app.startup")
-    Base.metadata.create_all(engine)
+    # To be replaced with Alembic migrations
+    # Base.metadata.create_all(engine)
     yield
     logger.info("app.shutdown")
     engine.dispose()

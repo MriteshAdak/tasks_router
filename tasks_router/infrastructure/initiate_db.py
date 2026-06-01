@@ -30,10 +30,10 @@ class Database:
         if self._engine is None: # Move all these configuration params to a config file.
             self._logger.info(
                 "db.engine.create",
-                host=self.settings.host,
-                port=self.settings.port,
-                database=self.settings.database,
-                sslmode=self.settings.sslmode,
+                host=self.settings.db_host,
+                port=self.settings.db_port,
+                database=self.settings.db_database,
+                sslmode=self.settings.db_sslmode,
                 pool_size=self.settings.pool_size,
                 max_overflow=self.settings.max_overflow,
             )
