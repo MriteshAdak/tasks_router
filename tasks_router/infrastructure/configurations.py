@@ -6,18 +6,25 @@ from typing import Optional
 from urllib.parse import quote_plus
 
 import structlog
+from pydantic import AliasChoices, Field, SecretStr
 from pydantic_settings import BaseSettings, SettingsConfigDict
-from pydantic import SecretStr
 
 class Settings(BaseSettings):
 
-    model_config = SettingsConfigDict(env_file=".env")
+    model_config = SettingsConfigDict(
+        env_file=".env",
+        case_sensitive=False,
+        extra="ignore",
+    )
 
     # General configuration
     environment: str = "development"
 
     # Prebuilt URL
-    url: Optional[str] = None
+    url: Optional[str] = Field(
+        default=None,
+        validation_alias=AliasChoices("DATABASE_URL", "DB_URL"),
+    )
 
     # Stanalone connection parameters
     db_host: str = "localhost"
@@ -67,19 +74,19 @@ class Settings(BaseSettings):
     def get_conn_args(self) -> dict[str, str]:
         """Constructs the connection arguments from the settings."""
 
-        if self.sslmode is None:
+        if self.db_sslmode is None:
             structlog.get_logger(__name__).debug("db.settings.ssl.disabled")
             return {}
-        elif self.sslmode in ("verify-ca", "verify-full"):
-            structlog.get_logger(__name__).debug("db.settings.ssl.verify", sslmode=self.sslmode)
+        elif self.db_sslmode in ("verify-ca", "verify-full"):
+            structlog.get_logger(__name__).debug("db.settings.ssl.verify", sslmode=self.db_sslmode)
             return {
-                "sslmode": self.sslmode,
-                "sslrootcert": self.sslrootcert
+                "sslmode": self.db_sslmode,
+                "sslrootcert": self.db_sslrootcert
             }
         else:
-            structlog.get_logger(__name__).debug("db.settings.ssl.enabled", sslmode=self.sslmode)
+            structlog.get_logger(__name__).debug("db.settings.ssl.enabled", sslmode=self.db_sslmode)
             return {
-                "sslmode": self.sslmode
+                "sslmode": self.db_sslmode
             }
 
 settings: Settings = Settings()
