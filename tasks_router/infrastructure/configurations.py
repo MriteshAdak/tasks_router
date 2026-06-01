@@ -11,7 +11,7 @@ from pydantic import SecretStr
 
 class Settings(BaseSettings):
 
-    model_config = SettingsConfigDict(env_file=".env", env_prefix="DB_")
+    model_config = SettingsConfigDict(env_file=".env")
 
     # General configuration
     environment: str = "development"
@@ -20,15 +20,15 @@ class Settings(BaseSettings):
     url: Optional[str] = None
 
     # Stanalone connection parameters
-    host: str = "localhost"
-    port: int = 5432
-    username: str
-    password: SecretStr
-    database: str = "psql"
+    db_host: str = "localhost"
+    db_port: int = 5432
+    db_username: str
+    db_password: SecretStr
+    db_database: str = "psql"
 
     # SSL configuration
-    sslmode: Optional[str] = None
-    sslrootcert: Optional[str] = None
+    db_sslmode: Optional[str] = None
+    db_sslrootcert: Optional[str] = None
 
     # DB engine configuration
     echo: bool = False
@@ -51,18 +51,18 @@ class Settings(BaseSettings):
             structlog.get_logger(__name__).debug("db.settings.url_provided")
             return self.url
 
-        safe_username = quote_plus(self.username)
-        safe_password = quote_plus(self.password.get_secret_value())
+        safe_username = quote_plus(self.db_username)
+        safe_password = quote_plus(self.db_password.get_secret_value())
 
         structlog.get_logger(__name__).debug(
             "db.settings.url_constructed",
-            host=self.host,
-            port=self.port,
-            database=self.database,
-            sslmode=self.sslmode,
+            host=self.db_host,
+            port=self.db_port,
+            database=self.db_database,
+            sslmode=self.db_sslmode,
         )
 
-        return f"postgresql+psycopg2://{safe_username}:{safe_password}@{self.host}:{self.port}/{self.database}"
+        return f"postgresql+psycopg2://{safe_username}:{safe_password}@{self.db_host}:{self.db_port}/{self.db_database}"
 
     def get_conn_args(self) -> dict[str, str]:
         """Constructs the connection arguments from the settings."""
