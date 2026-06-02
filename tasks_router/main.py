@@ -1,5 +1,4 @@
 from contextlib import asynccontextmanager
-from mangum import Mangum
 import structlog
 from fastapi import FastAPI
 from asgi_correlation_id import CorrelationIdMiddleware
@@ -12,7 +11,6 @@ from tasks_router.logging_config import (
 from tasks_router.routers.task_router import router as task_router
 from tasks_router.routers.user_router import router as user_router
 from tasks_router.routers.system_router import router as system_router
-from tasks_router.models.base_model import Base
 from tasks_router.dependencies import db
 from tasks_router.middleware.cors import register_cors_middleware
 
@@ -51,8 +49,6 @@ app.add_middleware(
     header_name=CORRELATION_ID_HEADER,
     update_request_header=True,
 )
-
-handler = Mangum(app)
 
 app.include_router(task_router)
 app.include_router(user_router)
