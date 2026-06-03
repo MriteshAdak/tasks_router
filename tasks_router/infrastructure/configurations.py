@@ -6,12 +6,10 @@ from typing import Optional
 from urllib.parse import quote_plus
 
 import structlog
-from pydantic import AliasChoices, Field, SecretStr
+from pydantic import AliasChoices, Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 import boto3
-
-auth_token = boto3.client('rds', region_name='eu-central-1').generate_db_auth_token(DBHostname='database-1-instance-1.crck6826scxq.eu-central-1.rds.amazonaws.com', Port=5432, DBUsername='postgres', Region='eu-central-1')
 
 class Settings(BaseSettings):
 
@@ -34,8 +32,9 @@ class Settings(BaseSettings):
     db_host: str = "localhost"
     db_port: int = 5432
     db_username: str = "postgres"
-    db_password: SecretStr = auth_token
+    db_password: str | None = None
     db_database: str = "psql"
+    db_region: str = "eu-central-1"
 
     # SSL configuration
     db_sslmode: Optional[str] = None
@@ -54,6 +53,17 @@ class Settings(BaseSettings):
 
     # TODO: Add logging here to log the loaded settings, ensuring that sensitive information like passwords is not logged. 
     # Adding validation for the settings to ensure they are correct before attempting to connect to the database.
+
+    def generate_auth_token(self) -> str:
+        """Generates an authentication token for AWS RDS using boto3."""
+        structlog.get_logger(__name__).debug("db.settings.generating_auth_token")
+        return boto3.client('rds', region_name=self.db_region) \
+                  .generate_db_auth_token(
+                    DBHostname=self.db_host,
+                    Port=self.db_port, 
+                    DBUsername=self.db_username, 
+                    Region=self.db_region
+            )
     
     def get_db_url(self) -> str:
         """Constructs the database URL from the settings."""
@@ -62,9 +72,13 @@ class Settings(BaseSettings):
             structlog.get_logger(__name__).debug("db.settings.url_provided")
             return self.url
 
+        if self.db_password is None:
+            structlog.get_logger(__name__).debug("db.settings.password_not_provided")
+            self.db_password = self.generate_auth_token()
+        
         safe_username = quote_plus(self.db_username)
-        safe_password = quote_plus(self.db_password.get_secret_value())
-
+        safe_password = quote_plus(self.db_password)
+        
         structlog.get_logger(__name__).debug(
             "db.settings.url_constructed",
             host=self.db_host,

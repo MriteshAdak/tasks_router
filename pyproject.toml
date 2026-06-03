@@ -22,6 +22,7 @@ dependencies = [
     "structlog==25.5.0",
     "asgi-correlation-id==4.3.4",
 ]
+license = {text = "MIT"}
 
 [dependency-groups]
 dev = [
@@ -33,8 +34,6 @@ dev = [
 db = [
     "alembic==1.18.4"
 ]
-
-license = {text = "MIT"}
 
 [tool.black]
 line-length = 88
