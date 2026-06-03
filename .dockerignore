@@ -1,0 +1,10 @@
+.git*
+README.md
+pyproject.toml
+pdm.lock
+.pdm*
+__pycache__
+.pytest_cache
+.venv
+.vscode
+tests
