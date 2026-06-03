@@ -9,3 +9,11 @@ __pycache__
 .vscode
 tests
 test.py
+.env*
+.python-version
+alembic.ini
+alembic*
+*.pyc
+**/__pycache__
+Dockerfile
+docker-compose*.yml
