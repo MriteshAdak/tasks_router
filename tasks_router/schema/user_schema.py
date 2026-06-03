@@ -29,3 +29,25 @@ class User(BaseModel):
     )
     
     model_config = ConfigDict(from_attributes=True)
+
+class UserCreate(BaseModel):
+    
+    username: str = Field(
+        validation_alias=AliasChoices(
+            'username',
+            'userId',
+            'userName',
+            'user_id',
+            'user_name'
+        )
+    )
+    
+    display_name: str = Field(
+        validation_alias=AliasChoices(
+            'display_name',
+            'displayName',
+            'name'
+        )
+    )
+    
+    model_config = ConfigDict(from_attributes=True)
