@@ -5,7 +5,7 @@ This module defines the UserService class, which interacts with the UserReposito
 import structlog
 
 from tasks_router.exceptions.custom_exceptions import ServiceException, UserNotFoundException, DatabaseOperationException
-from tasks_router.schema.user_schema import User as UserDTO
+from tasks_router.schema.user_schema import User as UserDTO, UserCreate
 from tasks_router.models.user_model import User as UserModel
 from tasks_router.repositories.user_repo import UserRepository
 from tasks_router.utils import convert_user_model_to_user_schema_dto
@@ -33,7 +33,7 @@ class UserService:
         except Exception as e:
             raise ServiceException(f"Error retrieving user with username {username}: {str(e)}") from e
 
-    def create(self, user: UserDTO) -> UserDTO:
+    def create(self, user: UserCreate) -> UserDTO:
         """Service for creating a new user in the database."""
 
         new_user_data = user.model_dump(exclude_unset=True)
