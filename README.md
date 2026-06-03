@@ -1,3 +1,5 @@
+(Some bugs identified. Work in progress)
+
 # Tasks Router
 
 A FastAPI service implementing a layered architecture pattern for managing tasks and users with PostgreSQL. 
