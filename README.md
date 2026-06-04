@@ -56,7 +56,7 @@ This repository provides a clean, well-structured, and opinionated foundation fo
 
 ### Quickstart (Local Deployment)
 1. **Configure Environment Variables**  
-   Create a `.env` file referencing the Database Settings configured in `infrastructure/configurations.py`. Use .env.example for reference:
+   Create a `.env` file referencing the Database Settings configured in `infrastructure/configurations.py`. Use .env.example for reference. Skip the SSL mode and SSL Root Cert for local deployment:
    ```dotenv
    # Example .env configuration
    DB_HOST=localhost
