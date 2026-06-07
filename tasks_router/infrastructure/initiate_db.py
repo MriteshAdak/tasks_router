@@ -2,10 +2,11 @@
 This module defines the Database class, which manages the SQLAlchemy engine and session factory for the application. It provides methods to create and cache the engine and session factory, as well as a generator function to yield database sessions for use in request handling.
 """
 
-from typing import Generator
+import time
+from typing import Any, Generator
 
 import structlog
-from sqlalchemy import create_engine, Engine
+from sqlalchemy import Engine, create_engine, event
 from sqlalchemy.orm import Session, sessionmaker
 
 from .configurations import Settings
@@ -22,6 +23,43 @@ class Database:
         self._logger = structlog.get_logger(__name__)
         
     # A reivew from claude suggests using thread locking for the engine and session factory creation to ensure thread safety in a multi-threaded environment. This is a good point, especially if the application will be running in a multi-threaded context. Implementing thread locking can
+
+    def _register_connection_handler(self, engine: Engine) -> None:
+        """Refresh IAM tokens and retry transient DBAPI connection failures."""
+
+        @event.listens_for(engine, "do_connect")
+        def connect_with_retry(
+            dialect: Any,
+            conn_rec: Any,
+            cargs: tuple[Any, ...],
+            cparams: dict[str, Any],
+        ) -> Any:
+            attempts = max(1, self.settings.db_connect_retries)
+            delay = max(0.0, self.settings.db_connect_retry_delay)
+
+            for attempt in range(1, attempts + 1):
+                if self.settings.uses_iam_auth():
+                    cparams["password"] = self.settings.generate_auth_token()
+
+                try:
+                    return dialect.connect(*cargs, **cparams)
+                except Exception:
+                    if attempt == attempts:
+                        self._logger.exception(
+                            "db.connection.error",
+                            attempt=attempt,
+                            attempts=attempts,
+                        )
+                        raise
+
+                    self._logger.warning(
+                        "db.connection.retry",
+                        attempt=attempt,
+                        attempts=attempts,
+                        retry_delay=delay,
+                    )
+                    if delay > 0:
+                        time.sleep(delay)
 
     def get_engine(self) -> Engine:
         """Returns a cached Engine instance. Creates one if it doesn't exist."""
@@ -46,6 +84,7 @@ class Database:
                     max_overflow=self.settings.max_overflow,
                     connect_args=self.settings.get_conn_args()
                 )
+                self._register_connection_handler(self._engine)
             except Exception:
                 self._logger.exception("db.engine.create.error")
                 raise

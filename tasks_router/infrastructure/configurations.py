@@ -47,6 +47,8 @@ class Settings(BaseSettings):
     pool_pre_ping: bool = True
     pool_size: int = 10
     max_overflow: int = 20
+    db_connect_retries: int = 3
+    db_connect_retry_delay: float = 0.5
 
     # DB session configuration
     autocommit: bool = False
@@ -58,14 +60,30 @@ class Settings(BaseSettings):
 
     def generate_auth_token(self) -> str:
         """Generates an authentication token for AWS RDS using boto3."""
-        structlog.get_logger(__name__).debug("db.settings.generating_auth_token")
-        return boto3.client('rds', region_name=self.db_region) \
-                  .generate_db_auth_token(
-                    DBHostname=self.db_host,
-                    Port=self.db_port, 
-                    DBUsername=self.db_username, 
-                    Region=self.db_region
+        logger = structlog.get_logger(__name__)
+        logger.debug("db.settings.generating_auth_token")
+        
+        try:
+            client = boto3.client('rds', region_name=self.db_region)
+            token = client.generate_db_auth_token(
+                DBHostname=self.db_host,
+                Port=self.db_port, 
+                DBUsername=self.db_username, 
+                Region=self.db_region
             )
+            return token
+        except Exception as e:
+            logger.exception(
+                "db.settings.auth_token_generation_failed",
+                error=str(e),
+                db_host=self.db_host,
+                db_region=self.db_region,
+            )
+            raise
+
+    def uses_iam_auth(self) -> bool:
+        """Returns whether standalone DB settings should use RDS IAM auth."""
+        return self.url is None and self.db_password is None
     
     def get_db_url(self) -> str:
         """Constructs the database URL from the settings."""
@@ -74,12 +92,14 @@ class Settings(BaseSettings):
             structlog.get_logger(__name__).debug("db.settings.url_provided")
             return self.url
 
-        if self.db_password is None:
+        if self.uses_iam_auth():
             structlog.get_logger(__name__).debug("db.settings.password_not_provided")
-            self.db_password = self.generate_auth_token()
+            password = "iam-auth-token"
+        else:
+            password = self.db_password
         
         safe_username = quote_plus(self.db_username)
-        safe_password = quote_plus(self.db_password)
+        safe_password = quote_plus(password)
         
         structlog.get_logger(__name__).debug(
             "db.settings.url_constructed",
