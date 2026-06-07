@@ -32,7 +32,6 @@ app = FastAPI(
     title="Tasks Router API",
     description="API for managing tasks and users with PostgreSQL database integration.",
     version="1.0.0",
-    redirect_slashes=False,
     lifespan=lifespan
 )
 
