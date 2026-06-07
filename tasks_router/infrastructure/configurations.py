@@ -47,6 +47,8 @@ class Settings(BaseSettings):
     pool_pre_ping: bool = True
     pool_size: int = 10
     max_overflow: int = 20
+    db_connect_retries: int = 3
+    db_connect_retry_delay: float = 0.5
 
     # DB session configuration
     autocommit: bool = False
@@ -66,6 +68,10 @@ class Settings(BaseSettings):
                     DBUsername=self.db_username, 
                     Region=self.db_region
             )
+
+    def uses_iam_auth(self) -> bool:
+        """Returns whether standalone DB settings should use RDS IAM auth."""
+        return self.url is None and self.db_password is None
     
     def get_db_url(self) -> str:
         """Constructs the database URL from the settings."""
@@ -74,12 +80,14 @@ class Settings(BaseSettings):
             structlog.get_logger(__name__).debug("db.settings.url_provided")
             return self.url
 
-        if self.db_password is None:
+        if self.uses_iam_auth():
             structlog.get_logger(__name__).debug("db.settings.password_not_provided")
-            self.db_password = self.generate_auth_token()
+            password = "iam-auth-token"
+        else:
+            password = self.db_password
         
         safe_username = quote_plus(self.db_username)
-        safe_password = quote_plus(self.db_password)
+        safe_password = quote_plus(password)
         
         structlog.get_logger(__name__).debug(
             "db.settings.url_constructed",
