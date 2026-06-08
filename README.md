@@ -5,3 +5,7 @@ This is a public URI with no Auth configured and all CORS origins are allowed.
 Please do not exploit and use sparingly.
 
 App has some issues with running and is pending troubleshooting.
+**Update:**
+- Function URL no longer active.
+- The code seemingly fails at creating sqlalchemy db session. The raw db session (psycopg2) however, seems fine.
+- Making some amends to the db connection flow.
