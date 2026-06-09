@@ -2,11 +2,12 @@
 Configuration module for database connection settings. This module defines a Settings class that uses Pydantic to manage database connection parameters, including host, port, username, password, database name, and SSL configuration. The Settings class provides methods to construct the database URL and connection arguments based on the provided settings. An instance of the Settings class is created at the end of the module for use in other parts of the application.
 """
 import os
-from typing import Optional
+from datetime import datetime, timedelta, timezone
+from typing import Any, Optional
 from urllib.parse import quote_plus
 
 import structlog
-from pydantic import AliasChoices, Field
+from pydantic import AliasChoices, Field, PrivateAttr
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 import boto3
@@ -21,6 +22,10 @@ class Settings(BaseSettings):
         extra="ignore",
     )
 
+    # Cache for RDS IAM Auth Token
+    _cached_token: Optional[str] = PrivateAttr(default=None)
+    _token_expiry: Optional[datetime] = PrivateAttr(default=None)
+
     # General configuration
     environment: str = "production"
 
@@ -30,47 +35,87 @@ class Settings(BaseSettings):
         validation_alias=AliasChoices("DATABASE_URL", "DB_URL"),
     )
 
-    # Stanalone connection parameters
-    db_host: str = "localhost"
-    db_port: int = 5432
-    db_username: str = "postgres"
-    db_password: str | None = None
-    db_database: str = "psql"
+    # Standalone connection parameters
+    db_host: Optional[str] = None
+    db_port: Optional[int] = None
+    db_username: Optional[str] = None
+    db_password: Optional[str] = None
+    db_database: Optional[str] = None
     db_region: str = "eu-central-1"
 
     # SSL configuration
     db_sslmode: Optional[str] = None
     db_sslrootcert: Optional[str] = None
 
+    connect_timeout_seconds: int = 40
+    probe_max_retries: int = 3
+    probe_retry_wait_seconds: float = 2.0
+
+    def __init__(self, **values: Any) -> None:
+        super().__init__(**values)
+        self._validate_db_settings()
+
+    def _validate_db_settings(self) -> None:
+        if self.url is not None:
+            return
+
+        required_fields = {
+            "db_host": self.db_host,
+            "db_port": self.db_port,
+            "db_username": self.db_username,
+            "db_database": self.db_database,
+        }
+
+        missing = [name for name, value in required_fields.items() if not value]
+
+        if self.uses_iam_auth():
+            if missing:
+                raise RuntimeError(
+                    "RDS IAM auth requires db_host, db_port, db_username, and db_database to be set."
+                )
+        else:
+            if self.db_password is None:
+                missing.append("db_password")
+            if missing:
+                raise RuntimeError(
+                    "Database configuration is incomplete. Set DATABASE_URL or provide "
+                    "db_host, db_port, db_username, db_password, and db_database."
+                )
+
+        if self.db_sslmode in ("verify-ca", "verify-full") and not self.db_sslrootcert:
+            raise RuntimeError(
+                "db_sslrootcert is required when db_sslmode is verify-ca or verify-full."
+            )
+
     # DB engine configuration
     echo: bool = False
-    pool_pre_ping: bool = True
-    pool_size: int = 10
-    max_overflow: int = 20
-    db_connect_retries: int = 3
-    db_connect_retry_delay: float = 0.5
-
     # DB session configuration
     autocommit: bool = False
     autoflush: bool = False
 
-
-    # TODO: Add logging here to log the loaded settings, ensuring that sensitive information like passwords is not logged. 
-    # Adding validation for the settings to ensure they are correct before attempting to connect to the database.
-
     def generate_auth_token(self) -> str:
-        """Generates an authentication token for AWS RDS using boto3."""
+        """Generates an authentication token for AWS RDS using boto3 with caching."""
         logger = structlog.get_logger(__name__)
-        logger.debug("db.settings.generating_auth_token")
-        
+
+        # Check if we have a valid cached token (valid for 15 mins, we cache for 10)
+        now = datetime.now(timezone.utc)
+        if self._cached_token and self._token_expiry and now < self._token_expiry:
+            logger.debug("db.settings.using_cached_auth_token")
+            return self._cached_token
+
+        logger.info("db.settings.generating_new_auth_token")
+
         try:
             client = boto3.client('rds', region_name=self.db_region)
             token = client.generate_db_auth_token(
                 DBHostname=self.db_host,
-                Port=self.db_port, 
-                DBUsername=self.db_username, 
+                Port=self.db_port,
+                DBUsername=self.db_username,
                 Region=self.db_region
             )
+            self._cached_token = token
+            # IAM tokens are valid for 15 minutes, we cache for 10 minutes to be safe
+            self._token_expiry = now + timedelta(minutes=10)
             return token
         except Exception as e:
             logger.exception(
@@ -94,12 +139,10 @@ class Settings(BaseSettings):
 
         if self.uses_iam_auth():
             structlog.get_logger(__name__).debug("db.settings.password_not_provided")
-            password = "iam-auth-token"
-        else:
-            password = self.db_password
+            self.db_password = self.generate_auth_token()
         
         safe_username = quote_plus(self.db_username)
-        safe_password = quote_plus(password)
+        safe_password = quote_plus(self.db_password)
         
         structlog.get_logger(__name__).debug(
             "db.settings.url_constructed",
