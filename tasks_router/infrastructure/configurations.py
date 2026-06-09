@@ -10,7 +10,7 @@ import structlog
 from pydantic import AliasChoices, Field, PrivateAttr
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
-import boto3
+import boto3 # type: ignore
 
 ENV_FILE = ".env" if os.path.exists(".env") else None
 
@@ -59,7 +59,7 @@ class Settings(BaseSettings):
         if self.url is not None:
             return
 
-        required_fields = {
+        required_fields: dict[str, Any]= {
             "db_host": self.db_host,
             "db_port": self.db_port,
             "db_username": self.db_username,
@@ -106,17 +106,18 @@ class Settings(BaseSettings):
         logger.info("db.settings.generating_new_auth_token")
 
         try:
-            client = boto3.client('rds', region_name=self.db_region)
-            token = client.generate_db_auth_token(
+            token = boto3.client( #type: ignore
+                'rds', region_name=self.db_region
+            ).generate_db_auth_token( #type: ignore
                 DBHostname=self.db_host,
                 Port=self.db_port,
                 DBUsername=self.db_username,
                 Region=self.db_region
             )
-            self._cached_token = token
+            self._cached_token = token # type: ignore
             # IAM tokens are valid for 15 minutes, we cache for 10 minutes to be safe
             self._token_expiry = now + timedelta(minutes=10)
-            return token
+            return token #type: ignore
         except Exception as e:
             logger.exception(
                 "db.settings.auth_token_generation_failed",
@@ -141,8 +142,8 @@ class Settings(BaseSettings):
             structlog.get_logger(__name__).debug("db.settings.password_not_provided")
             self.db_password = self.generate_auth_token()
         
-        safe_username = quote_plus(self.db_username)
-        safe_password = quote_plus(self.db_password)
+        safe_username = quote_plus(self.db_username) # type: ignore
+        safe_password = quote_plus(self.db_password) # type: ignore
         
         structlog.get_logger(__name__).debug(
             "db.settings.url_constructed",
@@ -154,7 +155,7 @@ class Settings(BaseSettings):
 
         return f"postgresql+psycopg2://{safe_username}:{safe_password}@{self.db_host}:{self.db_port}/{self.db_database}"
 
-    def get_conn_args(self) -> dict[str, str]:
+    def get_conn_args(self) -> dict[str, str | None]:
         """Constructs the connection arguments from the settings."""
 
         if self.db_sslmode is None:
