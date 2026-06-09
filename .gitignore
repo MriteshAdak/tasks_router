@@ -5,3 +5,7 @@ __pycache__/
 env/
 global-bundle.pem
 local.db
+lambda/
+python/
+test*.py
+layer.zip
