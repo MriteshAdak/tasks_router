@@ -28,7 +28,7 @@ class Database:
         """Refresh IAM tokens for new connections."""
 
         @event.listens_for(engine, "do_connect")
-        def connect_with_iam_token(
+        def connect_with_iam_token( # type: ignore
             dialect: Any,
             conn_rec: Any,
             cargs: tuple[Any, ...],
