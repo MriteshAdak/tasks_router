@@ -4,7 +4,7 @@ from asgi_correlation_id import CorrelationIdMiddleware
 
 from tasks_router.logging_config import (
     CORRELATION_ID_HEADER,
-    bind_contextvars_middleware,
+    structlog_bind_middleware,
     configure_logging,
 )
 from tasks_router.routers.task_router import router as task_router
@@ -26,7 +26,7 @@ register_cors_middleware(app)
 
 @app.middleware("http")
 async def structlog_context_middleware(request, call_next):
-    return await bind_contextvars_middleware(request, call_next)
+    return await structlog_bind_middleware(request, call_next)
 
 
 app.add_middleware(
