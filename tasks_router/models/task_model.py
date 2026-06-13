@@ -12,6 +12,7 @@ from tasks_router.models.base_model import Base
 from tasks_router.enums.task_statuses import TaskStatus
 
 class Task(Base):
+    """SQLAlchemy ORM model for tasks stored in the database."""
     __tablename__ = 'task'
     
     id: Mapped[uuid.UUID] = mapped_column(

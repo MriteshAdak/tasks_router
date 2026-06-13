@@ -10,6 +10,7 @@ from pydantic import AliasChoices, Field, SecretStr
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 class Settings(BaseSettings):
+    """Settings container for database connection and SQLAlchemy configuration."""
 
     model_config = SettingsConfigDict(
         env_file=".env",

@@ -18,11 +18,21 @@ _configure_lock = threading.Lock()
 
 
 def _get_log_level() -> int:
+	"""Get the configured log level from the environment.
+
+	Returns:
+		int: Numeric logging level corresponding to LOG_LEVEL, defaulting to INFO.
+	"""
 	level_name = os.getenv("LOG_LEVEL", "INFO").upper()
 	return logging._nameToLevel.get(level_name, logging.INFO)
 
 
 def _use_json_logging() -> bool:
+	"""Determine whether structured JSON logging should be enabled.
+
+	Returns:
+		bool: True when LOG_FORMAT=json or the environment indicates production/staging.
+	"""
 	log_format = os.getenv("LOG_FORMAT", "").lower()
 	env = os.getenv("ENV", "").lower()
 	return log_format == "json" or env in {"prod", "production", "staging"}
@@ -31,6 +41,14 @@ def _use_json_logging() -> bool:
 def _build_structlog_processors(
 	use_json: bool,
 ) -> tuple[list[Any], list[Any], Any]:
+	"""Build structlog processor chains for the application logger.
+
+	Args:
+		use_json (bool): Whether JSON log rendering should be used.
+
+	Returns:
+		tuple[list[Any], list[Any], Any]: A tuple containing the processor chain, foreign pre-chain, and renderer.
+	"""
 	timestamper = structlog.processors.TimeStamper(fmt="iso", utc=True)
 
 	exception_processor = structlog.processors.ExceptionRenderer()
@@ -40,6 +58,7 @@ def _build_structlog_processors(
 		__: str,
 		event_dict: dict[str, Any],
 	) -> dict[str, Any]:
+		"""Add a correlation ID to structured log events when available."""
 		if "correlation_id" not in event_dict:
 			cid = correlation_id.get()
 			if cid:
@@ -79,6 +98,10 @@ def _build_structlog_processors(
 
 
 def configure_logging() -> None:
+	"""Configure structlog and standard logging for the application.
+
+	This function is idempotent and can be called multiple times without reconfiguring logging.
+	"""
 	with _configure_lock:
 		if getattr(configure_logging, "_configured", False):
 			return
@@ -124,6 +147,15 @@ async def bind_contextvars_middleware(
 	request: Request,
 	call_next: RequestResponseEndpoint,
 ) -> Response:
+	"""Bind request correlation ID to context variables for each HTTP request.
+
+	Args:
+		request (Request): Incoming HTTP request.
+		call_next (RequestResponseEndpoint): Next ASGI request handler.
+
+	Returns:
+		Response: The HTTP response returned by the downstream handler.
+	"""
 	cid = correlation_id.get()
 	structlog.contextvars.clear_contextvars()
 	if cid:

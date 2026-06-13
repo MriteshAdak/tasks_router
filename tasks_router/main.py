@@ -1,3 +1,5 @@
+"""FastAPI application entry point and lifespan configuration for the Tasks Router API."""
+
 from contextlib import asynccontextmanager
 # from mangum import Mangum
 import structlog
@@ -43,6 +45,7 @@ register_cors_middleware(app)
 
 @app.middleware("http")
 async def structlog_context_middleware(request, call_next):
+    """Middleware that attaches structured logging context to each HTTP request."""
     return await bind_contextvars_middleware(request, call_next)
 
 

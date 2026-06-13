@@ -12,6 +12,7 @@ from .configurations import Settings
 
 
 class Database:
+    """Manages SQLAlchemy engine creation and database session provisioning."""
 
     def __init__(self, settings: Settings) -> None:
         """Initializes the Database instance with the provided settings."""

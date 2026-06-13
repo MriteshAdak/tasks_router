@@ -11,6 +11,7 @@ from sqlalchemy import UUID, DateTime, String
 from tasks_router.models.base_model import Base
 
 class User(Base):
+    """SQLAlchemy ORM model for users stored in the database."""
     __tablename__ = 'user'
     
     id: Mapped[uuid.UUID] = mapped_column(
