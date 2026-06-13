@@ -21,11 +21,21 @@ _is_configured = False
 
 
 def _get_log_level() -> int:
+	"""Get the configured log level from the environment.
+
+	Returns:
+		int: Numeric logging level corresponding to LOG_LEVEL, defaulting to INFO.
+	"""
 	level_name = os.getenv("LOG_LEVEL", "INFO").upper()
 	return logging.getLevelNamesMapping().get(level_name, logging.INFO)
 
 
 def _use_json_logging() -> bool:
+	"""Determine whether structured JSON logging should be enabled.
+
+	Returns:
+		bool: True when LOG_FORMAT=json or the environment indicates production/staging.
+	"""
 	log_format = os.getenv("LOG_FORMAT", "").lower()
 	env = settings.environment.lower()
 	return log_format == "json" or env in {"prod", "production", "staging"}
@@ -34,6 +44,14 @@ def _use_json_logging() -> bool:
 def _build_structlog_processors(
 	use_json: bool,
 ) -> tuple[list[Any], list[Any], Any]:
+	"""Build structlog processor chains for the application logger.
+
+	Args:
+		use_json (bool): Whether JSON log rendering should be used.
+
+	Returns:
+		tuple[list[Any], list[Any], Any]: A tuple containing the processor chain, foreign pre-chain, and renderer.
+	"""
 	timestamper = structlog.processors.TimeStamper(fmt="iso", utc=True)
 
 	exception_processor = structlog.processors.ExceptionRenderer()

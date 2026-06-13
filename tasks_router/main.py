@@ -1,3 +1,5 @@
+"""FastAPI application entry point and lifespan configuration for the Tasks Router API."""
+
 from contextlib import asynccontextmanager
 import structlog
 from fastapi import FastAPI

@@ -25,7 +25,24 @@ def get_tasks(
     user_id: uuid.UUID = Depends(get_current_user_id),
     task_services: TaskServices = Depends(get_task_services)
     ) -> list[TaskResponse]:
-    """Endpoint to retrieve all tasks for a given user ID."""
+    """Retrieve all tasks for the authenticated user.
+
+    This endpoint returns all task records that belong to the authenticated user.
+
+    Args:
+        user_id (uuid.UUID): Current authenticated user's identifier, injected by dependency.
+        task_services (TaskServices): Task service dependency used to fetch task data.
+
+    Returns:
+        list[TaskResponse]: A list of task response objects for the authenticated user.
+
+    Raises:
+        HTTPException: 500 if a database operation fails.
+        HTTPException: 400 if a service-layer validation or business rule fails.
+
+    Status Codes:
+        200: Tasks retrieved successfully.
+    """
 
     try:
         logger.info("Retrieving all tasks", user_id=str(user_id))
@@ -53,7 +70,25 @@ def create_task(
     user_id: uuid.UUID = Depends(get_current_user_id),
     task_services: TaskServices = Depends(get_task_services)
     ) -> TaskResponse:
-    """Endpoint to create a new task."""
+    """Create a new task for the authenticated user.
+
+    This endpoint accepts a TaskCreate payload and persists a new task for the authenticated user.
+
+    Args:
+        task (TaskCreate): Payload containing task title, status, and optional due date.
+        user_id (uuid.UUID): Current authenticated user's identifier, injected by dependency.
+        task_services (TaskServices): Task service dependency used to persist the new task.
+
+    Returns:
+        TaskResponse: The created task representation.
+
+    Raises:
+        HTTPException: 500 if a database operation fails.
+        HTTPException: 400 if a service-layer validation or business rule fails.
+
+    Status Codes:
+        201: Task created successfully.
+    """
 
     try:
         logger.info("Creating new task", user_id=str(user_id))
@@ -82,7 +117,26 @@ def update_task(
     user_id: uuid.UUID = Depends(get_current_user_id),
     task_services: TaskServices = Depends(get_task_services)
     ) -> TaskResponse:
-    """Endpoint to update an existing task."""
+    """Update an existing task for the authenticated user.
+
+    Args:
+        task_id (uuid.UUID): Identifier of the task to update, passed as a path parameter.
+        task (TaskUpdate): Payload containing task fields to update.
+        user_id (uuid.UUID): Current authenticated user's identifier, injected by dependency.
+        task_services (TaskServices): Task service dependency used to apply changes.
+
+    Returns:
+        TaskResponse: The updated task representation.
+
+    Raises:
+        HTTPException: 404 if the requested task does not exist for the authenticated user.
+        HTTPException: 500 if a database operation fails.
+        HTTPException: 400 if a service-layer validation or business rule fails.
+
+    Status Codes:
+        200: Task updated successfully.
+        404: Task not found.
+    """
 
     try:
         logger.info("Updating task", user_id=str(user_id), task_id=str(task_id))
@@ -111,7 +165,22 @@ def delete_task(
     user_id: uuid.UUID = Depends(get_current_user_id),
     task_services: TaskServices = Depends(get_task_services)
     ) -> None:
-    """Endpoint to delete a task by ID."""
+    """Delete a task for the authenticated user by its identifier.
+
+    Args:
+        task_id (uuid.UUID): Identifier of the task to delete, passed as a path parameter.
+        user_id (uuid.UUID): Current authenticated user's identifier, injected by dependency.
+        task_services (TaskServices): Task service dependency used to remove the task.
+
+    Raises:
+        HTTPException: 404 if the requested task does not exist for the authenticated user.
+        HTTPException: 500 if a database operation fails.
+        HTTPException: 400 if a service-layer validation or business rule fails.
+
+    Status Codes:
+        204: Task deleted successfully.
+        404: Task not found.
+    """
     
     try:
         logger.info("Deleting task", user_id=str(user_id), task_id=str(task_id))

@@ -23,7 +23,24 @@ def get_user(
     username: str,
     user_services: UserService = Depends(get_user_services)
 ) -> User:
-    """Endpoint to retrieve a user by username."""
+    """Retrieve a user by username.
+
+    Args:
+        username (str): Username path parameter used to look up the user.
+        user_services (UserService): User service dependency used to fetch user data.
+
+    Returns:
+        User: The requested user's response schema.
+
+    Raises:
+        HTTPException: 404 if the user cannot be found.
+        HTTPException: 500 if a database operation fails.
+        HTTPException: 400 if a service-layer validation or business rule fails.
+
+    Status Codes:
+        200: User retrieved successfully.
+        404: User not found.
+    """
 
     try:
         logger.info("Retrieving user", username=username)
@@ -52,7 +69,22 @@ def create_user(
     user: UserCreate,
     user_services: UserService = Depends(get_user_services)
     ) -> User:
-    """Endpoint to create a new user."""
+    """Create a new user.
+
+    Args:
+        user (UserCreate): Payload containing username and display name.
+        user_services (UserService): User service dependency used to persist the new user.
+
+    Returns:
+        User: The created user's response schema.
+
+    Raises:
+        HTTPException: 500 if a database operation fails.
+        HTTPException: 400 if a service-layer validation or business rule fails.
+
+    Status Codes:
+        201: User created successfully.
+    """
 
     try:
         logger.info("Creating new user", username=user.username)

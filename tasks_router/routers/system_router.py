@@ -10,7 +10,14 @@ logger = structlog.get_logger(__name__)
 
 @router.get("/health", status_code=status.HTTP_200_OK)
 async def health_check() -> dict[str, str]:
-    """Endpoint to check the health status of the service."""
+    """Return service health status.
+
+    Returns:
+        dict[str, str]: A simple JSON payload indicating service health.
+
+    Status Codes:
+        200: Service is healthy.
+    """
     logger.debug("system.health_check")
     return {
         "service": "tasks-api",
@@ -19,7 +26,14 @@ async def health_check() -> dict[str, str]:
 
 @router.get("/", status_code=status.HTTP_200_OK)
 async def root() -> dict[str, str | dict[str, str]]:
-    """Endpoint to provide a welcome message and list available endpoints."""
+    """Return a welcome message and available API endpoints.
+
+    Returns:
+        dict[str, str | dict[str, str]]: A map containing a welcome message and route descriptions.
+
+    Status Codes:
+        200: Request successful.
+    """
     logger.debug("system.root")
     return {
         "message": "Welcome to the Tasks API!",

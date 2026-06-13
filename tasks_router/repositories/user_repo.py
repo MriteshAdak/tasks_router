@@ -13,7 +13,11 @@ class UserRepository:
     """Repository class for managing User entities in the database."""
 
     def __init__(self, db_session: Session) -> None:
-        """Initialize the UserRepository with a database session."""
+        """Initialize the UserRepository with a database session.
+
+        Args:
+            db_session (Session): SQLAlchemy session for database operations.
+        """
 
         self.db_session = db_session
         self._logger = structlog.get_logger(__name__)
@@ -24,7 +28,14 @@ class UserRepository:
     
     # Will not be used in the current implementation, but added for completeness and future use.
     def get_all(self) -> list[UserModel]:
-        """Retrieve all users."""
+        """Retrieve all users from the database.
+
+        Returns:
+            list[UserModel]: A list of all user entities.
+
+        Raises:
+            DatabaseOperationException: When the query fails.
+        """
         
         try:
             self._logger.debug("users_repo.get_all")
@@ -33,7 +44,18 @@ class UserRepository:
             raise DatabaseOperationException(f"Error occurred while fetching users: {str(e)}") from e
 
     def get_by_username(self, username: str) -> UserModel:
-        """Retrieve a user by their username."""
+        """Retrieve a user by their username.
+
+        Args:
+            username (str): Username to search for.
+
+        Returns:
+            UserModel: The user entity matching the supplied username.
+
+        Raises:
+            UserNotFoundException: When no user exists with the requested username.
+            DatabaseOperationException: When the query fails.
+        """
         
         try:
             self._logger.debug("users_repo.get_by_username", username=username)
@@ -49,7 +71,17 @@ class UserRepository:
     # ------------------------------ Write operations ------------------------------
     
     def create(self, user: UserModel) -> UserModel:
-        """Create a new user in the database."""
+        """Persist a new user in the database.
+
+        Args:
+            user (UserModel): The user entity to persist.
+
+        Returns:
+            UserModel: The persisted user entity.
+
+        Raises:
+            DatabaseOperationException: When the insert or commit fails.
+        """
 
         try:
             self._logger.debug("users_repo.create", username=user.username)

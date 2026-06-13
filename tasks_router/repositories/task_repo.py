@@ -15,7 +15,11 @@ class TaskRepository:
     """Repository class for managing Task entities in the database."""
 
     def __init__(self, db_session: Session) -> None:
-        """Initialize the TaskRepository with a database session."""
+        """Initialize the TaskRepository with a database session.
+
+        Args:
+            db_session (Session): SQLAlchemy session for database operations.
+        """
 
         self.db_session = db_session
         self._logger = structlog.get_logger(__name__)
@@ -25,7 +29,17 @@ class TaskRepository:
     # ------------------------------ Read operations ------------------------------
 
     def get_all(self, user_id: uuid.UUID) -> list[TaskModel]:
-        """Retrieve all tasks for a given user ID."""
+        """Retrieve all tasks for a given user ID.
+
+        Args:
+            user_id (uuid.UUID): Identifier of the user whose tasks should be returned.
+
+        Returns:
+            list[TaskModel]: A list of TaskModel instances for the requested user.
+
+        Raises:
+            DatabaseOperationException: When the database query fails.
+        """
         
         try:
             self._logger.debug("tasks_repo.get_all", user_id=str(user_id))
@@ -34,7 +48,19 @@ class TaskRepository:
             raise DatabaseOperationException(f"Error retrieving tasks for user ID {user_id}: {str(e)}") from e
     
     def get_by_id(self, task_id: uuid.UUID, user_id: uuid.UUID) -> TaskModel:
-        """Retrieve a task by its ID."""
+        """Retrieve a task by task ID and owner ID.
+
+        Args:
+            task_id (uuid.UUID): Identifier of the task.
+            user_id (uuid.UUID): Identifier of the user who owns the task.
+
+        Returns:
+            TaskModel: The task model instance if found.
+
+        Raises:
+            TaskNotFoundException: When the task does not exist for the user.
+            DatabaseOperationException: When the database query fails.
+        """
         
         try:
             self._logger.debug("tasks_repo.get_by_id", user_id=str(user_id), task_id=str(task_id))
@@ -52,7 +78,17 @@ class TaskRepository:
     # ------------------------------ Write operations ------------------------------
     
     def create(self, task: TaskModel) -> TaskModel:
-        """Create a new task in the database."""
+        """Persist a new task in the database.
+
+        Args:
+            task (TaskModel): The task entity to persist.
+
+        Returns:
+            TaskModel: The persisted task instance with generated fields populated.
+
+        Raises:
+            DatabaseOperationException: When the insert or commit fails.
+        """
 
         try:
             self._logger.debug("tasks_repo.create", task_id=str(task.id), user_id=str(task.user_id))
@@ -66,7 +102,17 @@ class TaskRepository:
             raise DatabaseOperationException(f"Error creating task: {str(e)}") from e
 
     def update(self, task: TaskModel) -> TaskModel:
-        """Update an existing task in the database."""
+        """Persist updates to an existing task.
+
+        Args:
+            task (TaskModel): The task entity with updated fields.
+
+        Returns:
+            TaskModel: The updated task instance.
+
+        Raises:
+            DatabaseOperationException: When the commit or refresh fails.
+        """
         
         try:
             self._logger.debug("tasks_repo.update", task_id=str(task.id), user_id=str(task.user_id))
@@ -82,7 +128,14 @@ class TaskRepository:
             raise DatabaseOperationException(f"Error updating task with ID {task.id}: {str(e)}") from e
 
     def delete(self, task: TaskModel) -> None:
-        """Delete a task from the database."""
+        """Delete a task from the database.
+
+        Args:
+            task (TaskModel): The task entity to delete.
+
+        Raises:
+            DatabaseOperationException: When the delete or commit fails.
+        """
 
         try:
             self._logger.debug("tasks_repo.delete", task_id=str(task.id), user_id=str(task.user_id))

@@ -1,6 +1,8 @@
 from enum import StrEnum
 
 class SSLMode(StrEnum):
+    """Enum of supported PostgreSQL SSL connection modes."""
+
     DISABLE = "disable"
     ALLOW = "allow"
     PREFER = "prefer"

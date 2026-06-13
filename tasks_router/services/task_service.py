@@ -13,14 +13,34 @@ from tasks_router.utils import convert_task_model_to_response_dto, convert_task_
 from tasks_router.exceptions.custom_exceptions import TaskNotFoundException, DatabaseOperationException, ServiceException
 
 class TaskServices:
+    """Business service layer for task CRUD operations.
+
+    This class handles task creation, retrieval, update, and deletion by delegating persistence operations to the TaskRepository.
+    """
+
     def __init__(self, repository: TaskRepository) -> None:
-        """Initialize the TaskServices with a TaskRepository instance."""
+        """Initialize the TaskServices with a TaskRepository instance.
+
+        Args:
+            repository (TaskRepository): Repository used to interact with task persistence.
+        """
         
         self.repository = repository
         self._logger = structlog.get_logger(__name__)
 
     def get_all(self, user_id: uuid.UUID) -> list[TaskResponse]:
-        """Service for retrieving all tasks for a given user ID."""
+        """Retrieve all tasks for a given user.
+
+        Args:
+            user_id (uuid.UUID): Identifier of the user whose tasks are requested.
+
+        Returns:
+            list[TaskResponse]: A list of task response DTOs for the supplied user ID.
+
+        Raises:
+            DatabaseOperationException: When there is an error communicating with the database.
+            ServiceException: When an unexpected service-layer error occurs.
+        """
 
         try:
             self._logger.debug("task_services.get_all", user_id=str(user_id))
@@ -38,7 +58,19 @@ class TaskServices:
 
 
     def create(self, task: TaskCreate, user_id: uuid.UUID) -> TaskResponse:
-        """Service for creating a new task in the database."""
+        """Create a new task for the specified user.
+
+        Args:
+            task (TaskCreate): DTO containing title, status, and optional due date.
+            user_id (uuid.UUID): Identifier of the user for whom the task is created.
+
+        Returns:
+            TaskResponse: Task response DTO representing the created task.
+
+        Raises:
+            DatabaseOperationException: When the task cannot be persisted.
+            ServiceException: When an unexpected service-layer error occurs.
+        """
         
         # TODO: 
         # 1. Add validation to ensure that the user_id exists in the database before creating a task.
@@ -61,7 +93,21 @@ class TaskServices:
 
 
     def update(self, task_id: uuid.UUID, user_id: uuid.UUID, task: TaskUpdate) -> TaskResponse:
-        """Service for updating an existing task in the database."""
+        """Update an existing task belonging to the specified user.
+
+        Args:
+            task_id (uuid.UUID): Identifier of the task to update.
+            user_id (uuid.UUID): Identifier of the user who owns the task.
+            task (TaskUpdate): DTO containing fields to update.
+
+        Returns:
+            TaskResponse: Task response DTO representing the updated task.
+
+        Raises:
+            TaskNotFoundException: When the task does not exist for the user.
+            DatabaseOperationException: When there is an error communicating with the database.
+            ServiceException: When an unexpected service-layer error occurs.
+        """
 
         try:
             self._logger.debug("task_services.update.lookup", user_id=str(user_id), task_id=str(task_id))
@@ -88,7 +134,17 @@ class TaskServices:
 
 
     def delete(self, task_id: uuid.UUID, user_id: uuid.UUID) -> None:
-        """Service for deleting a task from the database."""
+        """Delete a task belonging to the specified user.
+
+        Args:
+            task_id (uuid.UUID): Identifier of the task to delete.
+            user_id (uuid.UUID): Identifier of the user who owns the task.
+
+        Raises:
+            TaskNotFoundException: When the task does not exist for the user.
+            DatabaseOperationException: When there is an error communicating with the database.
+            ServiceException: When an unexpected service-layer error occurs.
+        """
 
         try:
             self._logger.debug("task_services.delete.lookup", user_id=str(user_id), task_id=str(task_id))

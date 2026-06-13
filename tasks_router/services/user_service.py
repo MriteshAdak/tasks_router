@@ -11,14 +11,35 @@ from tasks_router.repositories.user_repo import UserRepository
 from tasks_router.utils import convert_user_model_to_user_schema_dto
 
 class UserService:
+    """Business service layer for user operations.
+
+    This class handles user retrieval and creation by delegating persistence operations to the UserRepository.
+    """
+
     def __init__(self, repository: UserRepository) -> None:
-        """Initialize the UserService with a UserRepository instance."""
+        """Initialize the UserService with a UserRepository instance.
+
+        Args:
+            repository (UserRepository): Repository used to interact with user persistence.
+        """
         
         self.repository = repository
         self._logger = structlog.get_logger(__name__)
 
     def get_user(self, username: str) -> UserDTO:
-        """Service for retrieving a user by their username."""
+        """Retrieve a user by username.
+
+        Args:
+            username (str): Username to look up in the repository.
+
+        Returns:
+            UserDTO: The corresponding user DTO.
+
+        Raises:
+            UserNotFoundException: When the requested user cannot be found.
+            DatabaseOperationException: When there is an error communicating with the database.
+            ServiceException: When an unexpected service-layer error occurs.
+        """
 
         try:
             self._logger.debug("user_services.get", username=username)
@@ -34,7 +55,18 @@ class UserService:
             raise ServiceException(f"Error retrieving user with username {username}: {str(e)}") from e
 
     def create(self, user: UserCreate) -> UserDTO:
-        """Service for creating a new user in the database."""
+        """Create a new user in the database.
+
+        Args:
+            user (UserCreate): Payload containing the username and display name.
+
+        Returns:
+            UserDTO: The created user DTO.
+
+        Raises:
+            DatabaseOperationException: When the user cannot be persisted.
+            ServiceException: When an unexpected service-layer error occurs.
+        """
 
         new_user_data = user.model_dump(exclude_unset=True)
         new_user = UserModel(**new_user_data)
