@@ -17,7 +17,7 @@ router: APIRouter = APIRouter(prefix="/tasks", tags=["Tasks"])
 logger = structlog.get_logger(__name__)
 
 @router.get(
-        "/",
+        "",
         response_model=list[TaskResponse],
         status_code=status.HTTP_200_OK,
     )
@@ -61,7 +61,7 @@ def get_tasks(
 
 
 @router.post(
-        "/",
+        "",
         response_model=TaskResponse,
         status_code=status.HTTP_201_CREATED
     )

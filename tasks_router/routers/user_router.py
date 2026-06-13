@@ -61,7 +61,7 @@ def get_user(
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="An unexpected error occurred while retrieving the user") from e
 
 @router.post(
-        "/",
+        "",
         response_model=User,
         status_code=status.HTTP_201_CREATED
     )

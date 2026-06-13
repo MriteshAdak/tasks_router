@@ -1,39 +1,8 @@
-# Updates
-**Bugs Resolved**
-1. User Creation  
-*Issue*: User creation flow required id field to be passed in the payload.  
-*Resolution*: Created a new UserCreate schema without id parameter.
-
-2. Auth Placeholder  
-*Issue*: The get_current_user_id() called get_user_repository() directly without resolving the dependency.  
-*Resolution*: Fixed the method signature to resolve the dependency before using it to get users.
-
-3. Logging Config (identified by Claude)  
-   *Issues*:
-      1. Incorrect exception_processor assignment.
-      2. configure_logging._configured guard is not thread-safe.
-      3. root_logger.handlers = [handler] are replaced without calling .close() on them first.
-      4. bind_contextvars_middleware — Context Not Cleared on Exception Path.  
-
-   *Resolutions*:
-      1. using ExceptionRenderer() instead.
-      2. using a threading.Lock to make the idempotency guard thread-safe.
-      3. using a threading.Lock to make the idempotency guard thread-safe.
-      4. using try/finally for contextvars.
-
-**Additions**
-1. Added docker compose to orchestrate db and backend services for dev testing.
-
-**Pending**
-1. Tests have not yet been completely vetted.
-2. User Input validations needs to be tightended.
-3. Logging coverage is not yet comprehensive.
-4. Auth not yet implemented.
-5. Docstrings are not yet in place.
-
 # Tasks Router
 
-A FastAPI service implementing a layered architecture pattern for managing tasks and users with PostgreSQL. 
+A FastAPI service implementing a layered architecture pattern for managing tasks and users with PostgreSQL.
+
+NOTE: branch "aws" has the serverless version of this code deployed as a Lambda Function connected to an Aurora DB.
 
 This repository provides a clean, well-structured, and opinionated foundation for building scalable REST APIs equipped with synchronous database access (SQLAlchemy + psycopg2), database migrations (Alembic), structured logging, and dependency management via PDM.
 
@@ -83,3 +52,9 @@ tasks_router/
 ```
 
 At the project root, you will additionally find the Alembic migration environments (`alembic/` and `alembic.ini`), PDM settings (`pyproject.toml`), a generic container definition (`dockerfile`), and the `tests/` directory.
+
+**Pending**
+1. User Input validations needs to be tightended.
+2. Logging coverage is not yet comprehensive.
+3. Auth not yet implemented.
+4. Docstrings are not yet in place.
